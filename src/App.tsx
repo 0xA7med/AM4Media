@@ -1,10 +1,91 @@
 import React, { useState, useEffect } from 'react';
-import { Camera, Play, Edit, Monitor, Users, Phone, ChevronDown, Facebook, Instagram, Twitter, Youtube } from 'lucide-react';
+import { Camera, Play, Edit, Monitor, Users, Phone, ChevronDown, Facebook, Instagram, Twitter, Youtube, Clock, Award, DollarSign, Users2, MessageCircle, Video, Film } from 'lucide-react';
 import VideoGallery from './components/VideoGallery';
+import VideoSlider from './components/VideoSlider';
+import HeroSection from './components/HeroSection';
+import emailjs from '@emailjs/browser';
+
+// تهيئة EmailJS
+emailjs.init("HLBCVhf1ZCFwFRH2T"); 
 
 function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    service: '',
+    message: ''
+  });
+  const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const videos = [
+    {
+      id: '1xCX8kP7uM3VSaktTd5wjjkfPZxTzoGli',
+      title: 'استعراض سيارة Uni V ',
+      description: 'فيديو ريل استعراض سيارة Uni V ',
+      categories: ['مونتاج', 'Reels'],
+      thumbnail: 'https://i.ibb.co/CKMj4Hp8/uni-v-am-2-mp4-snapshot-00-01-2025-02-05-00-32-57.jpg',
+      aspectRatio: 'portrait'
+    },
+    {
+      id: '174uOv7uYDInXSip-IuCWrZ0nC1Zl06Qx',
+      title: 'كل اللي بتحلم بيه في Uni T هتلاقيه',
+      description: 'فيديو عرض بعض مواصفات سيارة Uni T ',
+      categories: ['Gif','مونتاج', 'ترويجي'],
+      thumbnail: 'https://i.ibb.co/1JzcGTyp/uni-t-gif-1-mp4-snapshot-00-06-2025-02-04-23-25-08.jpg',
+      aspectRatio: 'square'
+    },
+    {
+      id: '1pdUAxv9m3SvQ3-sV4gjNiBOx8TyRiPKb',
+      title: 'استعراض سيارات بتقنية الهولوجرام',
+      description: 'فيديو ريل استعراض بعض سيارات شانجان بتقنية الهولوجرام ',
+      categories: ['مونتاج', 'Reels'],
+      thumbnail: 'https://i.ibb.co/W416NgTb/changan-hologram-jpg.jpg',
+      aspectRatio: 'portrait'
+    },
+    // {
+    //   id: '1EdZYRx8cPOaV7rzIaHOwOJzqdnNlNUEu',
+    //   title: ' ',
+    //   description: 'فيديو  استعراض      ',
+    //   categories: ['مونتاج','ترويجي',],
+    //   // thumbnail: '',
+    //   // aspectRatio: 'portrait'
+    // },
+    {
+      id: '1jkfmvqVskJ3-nQ1FWvo1HflaKM5AWk9d',
+      title: 'اختار اللون اللي يناسبك',
+      description: 'فيديو ترويجي لالوان سيارة Uni V من شنجان ',
+      categories: ['Gif','مونتاج', 'ترويجي'],
+      thumbnail: 'https://i.ibb.co/8gVhjkrv/changan-univ-colors.jpg',
+      aspectRatio: 'square'
+    },
+    {
+      id: '1c4zMYcKbFmLOaf4dEEG9mt8mwwiHQNlp',
+      title: 'فيديو تشويقي لمعرض Leap ج1',
+      description: 'فيديو تشويقي لمعرض Leap التقني',
+      categories: ['مونتاج', 'ترويجي'],
+      thumbnail: 'https://i.ibb.co/1G1LrJrs/leap-teaser.jpg',
+      aspectRatio: 'square'
+    },
+    {
+      id: '1Cp55nRwgOCUx6LXWtJ9HOabL5GfEEIwE',
+      title: 'فيديو ترويجي لشركة MicroPOS لبرنامج المحاسبة',
+      description: 'فيديو ترويجي لشركة MicroPOS لبرنامج المحاسبة الخاص بالكمبيوتر باستخدام الموشن جرافيك',
+      categories: ['موشن جرافيك', 'ترويجي'],
+      thumbnail: 'https://i.ibb.co/vCZYb64q/gif.gif',
+      aspectRatio: 'portrait'
+    }
+  ];
+
+  const portfolioVideos = videos;
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      setSelectedFiles(e.target.files);
+    }
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -13,6 +94,43 @@ function App() {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      await emailjs.send(
+        'service_8t94fdu',
+        'template_pw1o4yu',
+        {
+          to_name: 'AM Media',
+          from_name: formData.name,
+          from_email: formData.email,
+          message: formData.message,
+          reply_to: formData.email,
+          to_email: 'zeero4123@gmail.com',
+          service: formData.service
+        },
+        'HLBCVhf1ZCFwFRH2T'
+      );
+
+      alert('تم إرسال رسالتك بنجاح!');
+      setFormData({ name: '', email: '', service: '', message: '' });
+    } catch (error) {
+      alert('عذراً، حدث خطأ أثناء إرسال الرسالة. الرجاء المحاولة مرة أخرى.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const services = [
     { 
@@ -37,44 +155,6 @@ function App() {
     }
   ];
 
-  const portfolioVideos = [
-    {
-      id: '1EdZYRx8cPOaV7rzIaHOwOJzqdnNlNUEu',
-      title: 'موشن جرافيك احترافي',
-      description: 'تصميم موشن جرافيك إبداعي لشركة تقنية',
-      category: 'موشن جرافيك'
-    },
-    {
-      id: '1Thcs7caBUTJoCiVJd5n4wmIEZKXdZEvf',
-      title: 'فيديو تسويقي',
-      description: 'فيديو ترويجي لمنتج جديد',
-      category: 'تسويق'
-    },
-    {
-      id: '1wTBExl03Pk5-kBEvZimZapspnHO3Topn',
-      title: 'مونتاج فيديو',
-      description: 'مونتاج احترافي لفيديو تعليمي',
-      category: 'مونتاج'
-    },
-    {
-      id: '1EdZYRx8cPOaV7rzIaHOwOJzqdnNlNUEu',
-      title: 'إعلان تجاري',
-      description: 'إعلان تلفزيوني لشركة عقارية',
-      category: 'إعلانات'
-    },
-    {
-      id: '1Thcs7caBUTJoCiVJd5n4wmIEZKXdZEvf',
-      title: 'فيديو تعليمي',
-      description: 'شرح مبسط لمفاهيم تقنية',
-      category: 'تعليمي'
-    },
-    {
-      id: '1Cp55nRwgOCUx6LXWtJ9HOabL5GfEEIwE',
-      title: 'فيديو ترويجي لشركة MicroPOS لبرنامج المحاسبة ',
-      description: 'فيديو ترويجي لشركة MicroPOS لبرنامج المحاسبة الخاص بالكمبيوتر باستخدام الموشن جرافيك',
-      category: 'موشن جرافيك,تسويق'
-    }
-  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 text-gray-100" dir="rtl">
@@ -83,7 +163,7 @@ function App() {
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-20">
             <div className="text-2xl font-bold bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">
-              AM Media
+              <a href="#home">AM 4 Media</a>
             </div>
             
             {/* Desktop Menu */}
@@ -91,6 +171,7 @@ function App() {
               <a href="#home" className="text-gray-300 hover:text-white transition-colors">الرئيسية</a>
               <a href="#services" className="text-gray-300 hover:text-white transition-colors">خدماتنا</a>
               <a href="#portfolio" className="text-gray-300 hover:text-white transition-colors">أعمالنا</a>
+              <a href="#why-us" className="text-gray-300 hover:text-white transition-colors">لماذا نحن؟</a>
               <a href="#contact" className="text-gray-300 hover:text-white transition-colors">اتصل بنا</a>
             </nav>
 
@@ -108,47 +189,17 @@ function App() {
               <a href="#home" className="block text-gray-300 hover:text-white transition-colors">الرئيسية</a>
               <a href="#services" className="block text-gray-300 hover:text-white transition-colors">خدماتنا</a>
               <a href="#portfolio" className="block text-gray-300 hover:text-white transition-colors">أعمالنا</a>
+              <a href="#why-us" className="block text-gray-300 hover:text-white transition-colors">لماذا نحن؟</a>
               <a href="#contact" className="block text-gray-300 hover:text-white transition-colors">اتصل بنا</a>
             </nav>
           </div>
         </div>
       </header>
 
-      {/* Hero Section */}
-      <section id="home" className="relative pt-32 pb-20 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-purple-500/10"></div>
-        <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiMyMDIwMjAiIGZpbGwtb3BhY2l0eT0iMC40Ij48cGF0aCBkPSJNMzYgMzRjMC0yIDItNCAyLTRzLTItMi00LTJsLTIgMnYtNGwyIDJzMi0yIDItNGMwLTIgMC00LTItNHMtNCAwLTQgMmwtMiAyaC00bDIgMnMtMiAyLTIgNGMwIDIgMCA0IDIgNHM0IDAgNCAybDIgMmg0bC0yLTJzMi0yIDItNHoiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-5"></div>
-        </div>
-        <div className="container mx-auto px-4 relative">
-          <div className="flex flex-col md:flex-row items-center">
-            <div className="md:w-1/2 mb-10 md:mb-0">
-              <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">
-                نحول أفكارك إلى واقع مرئي
-              </h1>
-              <p className="text-xl text-gray-300 mb-8">
-                نقدم خدمات إنتاج فيديو وموشن جرافيك احترافية تساعدك على إيصال رسالتك بشكل مميز
-              </p>
-              <a href="#contact" className="inline-block bg-gradient-to-r from-blue-500 to-purple-500 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:opacity-90 transition-opacity">
-                ابدأ مشروعك
-              </a>
-            </div>
-            <div className="md:w-1/2 relative">
-              <div className="relative w-full aspect-video rounded-lg overflow-hidden shadow-2xl transform hover:scale-105 transition-transform duration-300">
-                <iframe
-                  src="https://drive.google.com/file/d/1EdZYRx8cPOaV7rzIaHOwOJzqdnNlNUEu/preview"
-                  className="absolute inset-0 w-full h-full"
-                  allow="autoplay"
-                  allowFullScreen
-                ></iframe>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      <HeroSection videos={videos} />
 
       {/* خدماتنا */}
-      <section className="py-20 relative">
+      <section id="services" className="py-20 relative">
         <div className="absolute inset-0 bg-gradient-to-br from-blue-900/20 via-gray-900 to-black"></div>
         <div className="container mx-auto px-4 relative">
           <h2 className="text-4xl font-bold text-center mb-12 bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">
@@ -181,49 +232,38 @@ function App() {
       <section id="portfolio" className="py-20">
         <div className="container mx-auto px-4">
           <h2 className="text-4xl font-bold text-center mb-16 bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">أعمالنا</h2>
-          <VideoGallery
-            videos={[
-              {
-                id: '1EdZYRx8cPOaV7rzIaHOwOJzqdnNlNUEu',
-                title: 'موشن جرافيك احترافي',
-                description: 'تصميم موشن جرافيك إبداعي لشركة تقنية',
-                categories: ['موشن جرافيك', 'تسويق'],
-                thumbnail: '/thumbnails/motion-graphic.jpg'
-              },
-              {
-                id: '1Thcs7caBUTJoCiVJd5n4wmIEZKXdZEvf',
-                title: 'فيديو تسويقي',
-                description: 'فيديو ترويجي لمنتج جديد',
-                categories: ['تسويق', 'إعلانات']
-              },
-              {
-                id: '1wTBExl03Pk5-kBEvZimZapspnHO3Topn',
-                title: 'مونتاج فيديو',
-                description: 'مونتاج احترافي لفيديو تعليمي',
-                categories: ['مونتاج', 'تعليمي'],
-                thumbnail: '/thumbnails/video-editing.jpg'
-              },
-              {
-                id: '1EdZYRx8cPOaV7rzIaHOwOJzqdnNlNUEu',
-                title: 'إعلان تجاري',
-                description: 'إعلان تلفزيوني لشركة عقارية',
-                categories: ['إعلانات', 'تسويق', 'مونتاج']
-              },
-              {
-                id: '1c4zMYcKbFmLOaf4dEEG9mt8mwwiHQNlp',
-                title: 'فيديو تشويقي لمعرض Leap',
-                description: 'فيديو تشويقي لمعرض Leap التقني',
-                categories: ['مونتاج', 'ترويجي']
-              },
-              {
-                id: '1Cp55nRwgOCUx6LXWtJ9HOabL5GfEEIwE',
-                title: 'فيديو ترويجي لشركة MicroPOS لبرنامج المحاسبة',
-                description: 'فيديو ترويجي لشركة MicroPOS لبرنامج المحاسبة الخاص بالكمبيوتر باستخدام الموشن جرافيك',
-                categories: ['موشن جرافيك', 'تسويق'],
-                thumbnail: 'https://i.ibb.co/k29m8x0Y/w.jpg'
-              }
-            ]}
-          />
+          <VideoGallery videos={portfolioVideos} />
+        </div>
+      </section>
+
+      {/* Why Us Section */}
+      <section id="why-us" className="py-20 bg-gray-900/50">
+        <div className="container mx-auto px-4">
+          <h2 className="text-4xl font-bold text-center mb-16 bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">
+            لماذا نحن؟
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="bg-gray-800/30 backdrop-blur-sm p-8 rounded-2xl text-center">
+              <Award className="w-12 h-12 mx-auto mb-6 text-blue-500" />
+              <h3 className="text-xl font-bold mb-4">جودة إنتاج احترافية</h3>
+              <p className="text-gray-400">نستخدم أحدث التقنيات والمعدات لضمان أعلى جودة</p>
+            </div>
+            <div className="bg-gray-800/30 backdrop-blur-sm p-8 rounded-2xl text-center">
+              <Clock className="w-12 h-12 mx-auto mb-6 text-blue-500" />
+              <h3 className="text-xl font-bold mb-4">تسليم سريع</h3>
+              <p className="text-gray-400">نلتزم بالمواعيد النهائية ونضمن تسليم المشاريع في الوقت المحدد</p>
+            </div>
+            <div className="bg-gray-800/30 backdrop-blur-sm p-8 rounded-2xl text-center">
+              <DollarSign className="w-12 h-12 mx-auto mb-6 text-blue-500" />
+              <h3 className="text-xl font-bold mb-4">أسعار تنافسية</h3>
+              <p className="text-gray-400">نقدم أفضل قيمة مقابل المال مع الحفاظ على الجودة</p>
+            </div>
+            <div className="bg-gray-800/30 backdrop-blur-sm p-8 rounded-2xl text-center">
+              <Users2 className="w-12 h-12 mx-auto mb-6 text-blue-500" />
+              <h3 className="text-xl font-bold mb-4">فريق إبداعي متخصص</h3>
+              <p className="text-gray-400">فريقنا من المحترفين ذوي الخبرة في مجال الإنتاج المرئي</p>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -232,32 +272,85 @@ function App() {
         <div className="container mx-auto px-4">
           <h2 className="text-4xl font-bold text-center mb-16 bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">اتصل بنا</h2>
           <div className="max-w-3xl mx-auto">
-            <form className="bg-gray-800/50 backdrop-blur-sm p-8 rounded-2xl shadow-lg">
+            {/* WhatsApp Button */}
+            <div className="text-center mb-8">
+              <a
+                href="https://wa.me/201026043165"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-full transition-colors duration-300"
+              >
+                <MessageCircle className="w-5 h-5" />
+                تواصل معنا عبر واتساب
+              </a>
+            </div>
+            <form onSubmit={handleSubmit} className="bg-gray-800/50 backdrop-blur-sm p-8 rounded-2xl shadow-lg">
               <div className="mb-6">
                 <label className="block text-gray-300 mb-2">الاسم</label>
                 <input 
                   type="text" 
+                  name="name"
+                  value={formData.name}
+                  onChange={handleInputChange}
                   className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg focus:outline-none focus:border-blue-500 text-white transition-colors"
                   placeholder="أدخل اسمك"
+                  required
                 />
               </div>
               <div className="mb-6">
                 <label className="block text-gray-300 mb-2">البريد الإلكتروني</label>
                 <input 
-                  type="email" 
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
                   className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg focus:outline-none focus:border-blue-500 text-white transition-colors"
                   placeholder="أدخل بريدك الإلكتروني"
+                  required
                 />
+              </div>
+              <div className="mb-6">
+                <label className="block text-gray-300 mb-2">نوع الخدمة المطلوبة</label>
+                <select
+                  name="service"
+                  value={formData.service}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg focus:outline-none focus:border-blue-500 text-white transition-colors"
+                  required
+                >
+                  <option value="">اختر الخدمة</option>
+                  <option value="video">إنتاج فيديو</option>
+                  <option value="motion">موشن جرافيك</option>
+                  <option value="editing">مونتاج فيديو</option>
+                  <option value="design">تصميم جرافيك</option>
+                </select>
               </div>
               <div className="mb-6">
                 <label className="block text-gray-300 mb-2">الرسالة</label>
                 <textarea 
+                  name="message"
+                  value={formData.message}
+                  onChange={handleInputChange}
                   className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg focus:outline-none focus:border-blue-500 text-white transition-colors h-32"
                   placeholder="اكتب رسالتك هنا"
+                  required
                 ></textarea>
               </div>
-              <button className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white py-3 rounded-lg font-semibold hover:opacity-90 transition-opacity">
-                إرسال
+              <div className="mb-6">
+                <label className="block text-gray-300 mb-2">رفع الملفات</label>
+                <input 
+                  type="file" 
+                  multiple
+                  onChange={handleFileChange}
+                  className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg focus:outline-none focus:border-blue-500 text-white transition-colors"
+                />
+              </div>
+              <button 
+                type="submit" 
+                className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white py-3 rounded-lg font-semibold hover:opacity-90 transition-opacity disabled:opacity-50"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? 'جاري الإرسال...' : 'إرسال'}
               </button>
             </form>
           </div>
@@ -265,24 +358,44 @@ function App() {
       </section>
 
       {/* Footer */}
-      <footer className="py-8">
+      <footer className="bg-gray-900 py-12">
         <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <p className="text-gray-400 mb-4 md:mb-0">جميع الحقوق محفوظة © AM Media</p>
-            <div className="flex space-x-6 space-x-reverse">
-              <a href="#" className="text-gray-400 hover:text-white transition-colors">
-                <Facebook className="w-6 h-6" />
-              </a>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors">
-                <Instagram className="w-6 h-6" />
-              </a>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors">
-                <Twitter className="w-6 h-6" />
-              </a>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors">
-                <Youtube className="w-6 h-6" />
-              </a>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div>
+              <h3 className="text-2xl font-bold text-white mb-4">AM 4 Media</h3>
+              <p className="text-gray-400">نحول أفكارك إلى واقع مرئي مع فريق محترف من المبدعين</p>
+            
             </div>
+            <div>
+              <h4 className="text-xl font-bold text-white mb-4">روابط سريعة</h4>
+              <ul className="space-y-2">
+                <li><a href="#home" className="text-gray-400 hover:text-white transition-colors">الرئيسية</a></li>
+                <li><a href="#services" className="text-gray-300 hover:text-white transition-colors">خدماتنا</a></li>
+                <li><a href="#portfolio" className="text-gray-400 hover:text-white transition-colors">أعمالنا</a></li>
+                <li><a href="#why-us" className="text-gray-400 hover:text-white transition-colors">لماذا نحن؟</a></li>
+                <li><a href="#contact" className="text-gray-400 hover:text-white transition-colors">اتصل بنا</a></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="text-xl font-bold text-white mb-4">تواصل معنا</h4>
+              <div className="flex space-x-4 rtl:space-x-reverse">
+                <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                  <Facebook className="w-6 h-6" />
+                </a>
+                <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                  <Instagram className="w-6 h-6" />
+                </a>
+                <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                  <Twitter className="w-6 h-6" />
+                </a>
+                <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                  <Youtube className="w-6 h-6" />
+                </a>
+              </div>
+            </div>
+          </div>
+          <div className="mt-8 pt-8 border-t border-gray-800 text-center text-gray-400">
+            <p> {new Date().getFullYear()} AM 4 Media. جميع الحقوق محفوظة</p>
           </div>
         </div>
       </footer>
