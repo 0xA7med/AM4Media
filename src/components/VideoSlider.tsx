@@ -46,7 +46,7 @@ const VideoSlider: React.FC<VideoSliderProps> = ({ videos }) => {
   };
 
   return (
-    <div className="relative w-full h-[500px] overflow-hidden rounded-2xl shadow-2xl">
+    <div className="relative w-full aspect-[4/3] md:aspect-[16/9] overflow-hidden rounded-2xl shadow-2xl">
       <div className="absolute inset-0 transition-transform duration-700 ease-in-out"
         style={{ transform: `translateX(-${currentIndex * 100}%)` }}>
         {videos.map((video, index) => (
@@ -56,8 +56,8 @@ const VideoSlider: React.FC<VideoSliderProps> = ({ videos }) => {
               onClick={() => openPopup(video)}>
               <img src={video.thumbnail} alt={video.title} 
                 className="w-full h-full object-cover rounded-2xl transform group-hover:scale-105 transition-transform duration-300" />
-              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6 rounded-b-2xl">
-                <h3 className="text-white text-2xl font-bold transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
+              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3 md:p-6 rounded-b-2xl">
+                <h3 className="text-base md:text-2xl font-bold text-white transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
                   {video.title}
                 </h3>
               </div>
@@ -66,15 +66,15 @@ const VideoSlider: React.FC<VideoSliderProps> = ({ videos }) => {
         ))}
       </div>
 
-      <button onClick={prevSlide} className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 p-3 rounded-full text-white hover:bg-black/70 transition-all duration-300 hover:scale-110">
-        <ChevronLeft size={32} />
+      <button onClick={prevSlide} className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 bg-black/50 p-2 md:p-3 rounded-full text-white hover:bg-black/70 transition-all duration-300 hover:scale-110 z-10">
+        <ChevronLeft className="w-4 h-4 md:w-6 md:h-6" />
       </button>
-      <button onClick={nextSlide} className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 p-3 rounded-full text-white hover:bg-black/70 transition-all duration-300 hover:scale-110">
-        <ChevronRight size={32} />
+      <button onClick={nextSlide} className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 bg-black/50 p-2 md:p-3 rounded-full text-white hover:bg-black/70 transition-all duration-300 hover:scale-110 z-10">
+        <ChevronRight className="w-4 h-4 md:w-6 md:h-6" />
       </button>
 
       {showPopup && selectedVideo && (
-        <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-8" onClick={closePopup}>
+        <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-3 md:p-8" onClick={closePopup}>
           <div className="w-full max-w-4xl aspect-video bg-black relative rounded-2xl overflow-hidden shadow-xl" onClick={(e) => e.stopPropagation()}>
             <iframe 
               src={getEmbedUrl(selectedVideo.id)}
@@ -83,7 +83,7 @@ const VideoSlider: React.FC<VideoSliderProps> = ({ videos }) => {
               allowFullScreen
               style={{ border: 'none' }}
             />
-            <button onClick={closePopup} className="absolute -top-12 right-0 text-white hover:text-gray-300 transition-colors">
+            <button onClick={closePopup} className="absolute -top-8 md:-top-12 right-0 text-white hover:text-gray-300 transition-colors text-sm md:text-base">
               إغلاق
             </button>
           </div>

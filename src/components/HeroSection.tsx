@@ -14,23 +14,23 @@ const HeroSection = ({ videos }) => {
           
           {/* القسم الأيسر - النصوص */}
           <motion.div 
-            className="md:w-1/2 mb-10 md:mb-0"
+            className="md:w-1/2 mb-10 md:mb-0 text-center md:text-right"
             initial={{ opacity: 0, x: -50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 md:mb-6 bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent leading-tight">
               نحول أفكارك إلى واقع مرئي
             </h1>
 
-            <p className="text-xl text-gray-300 mb-8">
+            <p className="text-lg sm:text-xl md:text-2xl text-gray-300 mb-6 md:mb-8 leading-relaxed">
               نقدم خدمات إنتاج فيديو وموشن جرافيك احترافية تناسب احتياجات عملك
             </p>
 
-            <div className="flex gap-4 flex-wrap">
+            <div className="flex gap-3 md:gap-4 flex-wrap justify-center md:justify-start">
               <motion.a 
                 href="#contact"
-                className="inline-block bg-gradient-to-r from-blue-500 to-purple-500 text-white px-8 py-4 rounded-lg text-lg font-semibold shadow-lg hover:opacity-90 transition-opacity"
+                className="inline-block bg-gradient-to-r from-blue-500 to-purple-500 text-white px-6 md:px-8 py-3 md:py-4 rounded-lg text-base md:text-lg font-semibold shadow-lg hover:opacity-90 transition-opacity"
                 whileHover={{ scale: 1.1 }}
               >
                 ابدأ مشروعك
@@ -38,7 +38,7 @@ const HeroSection = ({ videos }) => {
 
               <motion.a 
                 href="#portfolio"
-                className="inline-block bg-white/10 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-white/20 transition-colors"
+                className="inline-block bg-white/10 text-white px-6 md:px-8 py-3 md:py-4 rounded-lg text-base md:text-lg font-semibold hover:bg-white/20 transition-colors"
                 whileHover={{ scale: 1.05 }}
               >
                 شاهد أعمالنا
@@ -46,14 +46,16 @@ const HeroSection = ({ videos }) => {
             </div>
           </motion.div>
 
-          {/* القسم الأيمن - فيديوهات العرض */}
+          {/* القسم الأيمن - سلايدر الفيديو */}
           <motion.div 
-            className="md:w-1/2"
+            className="w-full md:w-1/2"
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
+            transition={{ duration: 0.8 }}
           >
-            <VideoSlider videos={videos.slice(0, Math.min(videos.length, 5))} />
+            <div className="w-full max-w-2xl mx-auto">
+              <VideoSlider videos={videos} />
+            </div>
           </motion.div>
 
         </div>
