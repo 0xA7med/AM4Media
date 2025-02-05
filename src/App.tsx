@@ -25,7 +25,7 @@ function App() {
       id: '1xCX8kP7uM3VSaktTd5wjjkfPZxTzoGli',
       title: 'استعراض سيارة Uni V ',
       description: 'فيديو ريل استعراض سيارة Uni V ',
-      categories: ['مونتاج', 'Reels'],
+      categories: ['مونتاج','ترويجي', 'Reels'],
       thumbnail: 'https://i.ibb.co/CKMj4Hp8/uni-v-am-2-mp4-snapshot-00-01-2025-02-05-00-32-57.jpg',
       aspectRatio: 'portrait'
     },
@@ -41,7 +41,7 @@ function App() {
       id: '1pdUAxv9m3SvQ3-sV4gjNiBOx8TyRiPKb',
       title: 'استعراض سيارات بتقنية الهولوجرام',
       description: 'فيديو ريل استعراض بعض سيارات شانجان بتقنية الهولوجرام ',
-      categories: ['مونتاج', 'Reels'],
+      categories: ['مونتاج','ترويجي', 'Reels'],
       thumbnail: 'https://i.ibb.co/W416NgTb/changan-hologram-jpg.jpg',
       aspectRatio: 'portrait'
     },
@@ -73,7 +73,7 @@ function App() {
       id: '1Cp55nRwgOCUx6LXWtJ9HOabL5GfEEIwE',
       title: 'فيديو ترويجي لشركة MicroPOS لبرنامج المحاسبة',
       description: 'فيديو ترويجي لشركة MicroPOS لبرنامج المحاسبة الخاص بالكمبيوتر باستخدام الموشن جرافيك',
-      categories: ['موشن جرافيك', 'ترويجي'],
+      categories: ['موشن جرافيك','Reels', 'ترويجي'],
       thumbnail: 'https://i.ibb.co/vCZYb64q/gif.gif',
       aspectRatio: 'portrait'
     }
@@ -159,15 +159,16 @@ function App() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 text-gray-100" dir="rtl">
       {/* Header */}
-      <header className={`fixed w-full top-0 z-50 transition-all duration-300 ${isScrolled ? 'bg-gray-900/95 backdrop-blur-md shadow-lg' : 'bg-transparent'}`}>
+      <header className={`fixed w-full z-50 transition-all duration-300 ${isScrolled ? 'bg-gray-900/95 backdrop-blur-sm py-2' : 'bg-transparent py-4'}`}>
         <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between h-20">
-            <div className="text-2xl font-bold bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">
-              <a href="#home">AM 4 Media</a>
-            </div>
-            
-            {/* Desktop Menu */}
-            <nav className="hidden md:flex space-x-8 space-x-reverse">
+          <div className="flex justify-between items-center">
+            {/* Logo */}
+            <a href="#" className="flex items-center">
+              <img src="https://i.ibb.co/rXykWgk/AM-4-Media-Logo.png" alt="AM4 Media Logo" className="h-16 w-auto" />
+            </a>
+
+            {/* Desktop Navigation Links */}
+            <nav className="hidden md:flex gap-12">
               <a href="#home" className="text-gray-300 hover:text-white transition-colors">الرئيسية</a>
               <a href="#services" className="text-gray-300 hover:text-white transition-colors">خدماتنا</a>
               <a href="#portfolio" className="text-gray-300 hover:text-white transition-colors">أعمالنا</a>
