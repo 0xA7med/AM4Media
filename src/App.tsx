@@ -20,8 +20,7 @@ function HomePage() {
   });
   const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const videos = [
+  export const videos = [
    {
       id: '1X0oD9KbArMOpp6d1Up7mUpWBGZKn6tQ5',
       title: 'افضل خدمات صيانة السيارات',
@@ -78,14 +77,7 @@ function HomePage() {
       thumbnail: 'https://i.ibb.co/W416NgTb/changan-hologram-jpg.jpg',
       aspectRatio: 'portrait'
     },
-    // {
-    //   id: '1EdZYRx8cPOaV7rzIaHOwOJzqdnNlNUEu',
-    //   title: ' ',
-    //   description: 'فيديو  استعراض      ',
-    //   categories: ['مونتاج','ترويجي',],
-    //   // thumbnail: '',
-    //   // aspectRatio: 'portrait'
-    // },
+   
     {
       id: '1jkfmvqVskJ3-nQ1FWvo1HflaKM5AWk9d',
       title: 'اختار اللون اللي يناسبك',
