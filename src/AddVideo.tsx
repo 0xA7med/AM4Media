@@ -736,7 +736,7 @@ export default function AddVideo() {
                       <li>احفظ الملف وأعد تشغيل التطبيق لرؤية التغييرات.</li>
                     </ol>
                   </div>
-                </div>
+                </>
             </div>
           )}
         </CardContent>
