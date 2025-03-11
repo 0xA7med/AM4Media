@@ -1,69 +1,82 @@
 import { useEffect, useRef, useState } from "react";
 
-export default function IntroVideo() {
-  const videoRef = useRef<HTMLVideoElement>(null);
+interface IntroVideoProps {
+  videoId: string;
+}
+
+export default function IntroVideo({ videoId }: IntroVideoProps) {
+  const iframeRef = useRef<HTMLIFrameElement>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isMuted, setIsMuted] = useState(true);
 
   useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
-
-    const handleCanPlay = () => {
+    // تأكد من وجود معرف الفيديو
+    if (!videoId) {
+      setError("لم يتم تحديد معرف الفيديو");
       setIsLoading(false);
-      try {
-        video.play().catch(e => {
-          console.error("فشل تشغيل الفيديو تلقائيًا:", e);
-          setError("فشل تشغيل الفيديو تلقائيًا");
-        });
-      } catch (e) {
-        console.error("خطأ غير متوقع:", e);
-        setError("حدث خطأ أثناء تشغيل الفيديو");
-      }
-    };
+      return;
+    }
 
-    const handleError = () => {
-      setIsLoading(false);
-      setError("فشل تحميل الفيديو");
-      console.error("خطأ في تحميل الفيديو", video.error);
-    };
-
-    // إضافة مستمع لأحداث تحميل الفيديو والأخطاء
-    video.addEventListener("canplay", handleCanPlay);
-    video.addEventListener("error", handleError);
-
-    // تأكد من أن الفيديو يحاول التحميل
-    video.load();
-
+    // إعادة ضبط حالة التحميل عند تغيير معرف الفيديو
+    setIsLoading(true);
+    setError(null);
+    
     // إضافة مهلة زمنية للكشف عن مشاكل التحميل
     const timeoutId = setTimeout(() => {
-      if (isLoading && !video.readyState) {
+      if (isLoading) {
         setError("استغرق تحميل الفيديو وقتًا طويلاً، يرجى التحقق من اتصالك بالإنترنت");
+        setIsLoading(false);
       }
     }, 15000);
+    
+    return () => clearTimeout(timeoutId);
+  }, [videoId, isLoading]);
 
-    return () => {
-      clearTimeout(timeoutId);
-      video.removeEventListener("canplay", handleCanPlay);
-      video.removeEventListener("error", handleError);
-    };
-  }, [isLoading]);
+  const handleIframeLoad = () => {
+    setIsLoading(false);
+  };
+
+  const handleIframeError = () => {
+    setIsLoading(false);
+    setError("حدث خطأ أثناء تحميل الفيديو");
+  };
 
   const toggleMute = () => {
-    if (videoRef.current) {
-      videoRef.current.muted = !videoRef.current.muted;
-      setIsMuted(!isMuted);
+    setIsMuted(!isMuted);
+    if (iframeRef.current && iframeRef.current.contentWindow) {
+      try {
+        // محاولة إرسال رسالة للإطار للتحكم في الصوت
+        const message = isMuted ? 'unmute' : 'mute';
+        iframeRef.current.contentWindow.postMessage(message, '*');
+      } catch (error) {
+        console.error('خطأ في التحكم بالصوت:', error);
+      }
     }
   };
 
   const retryLoading = () => {
     setIsLoading(true);
     setError(null);
-    if (videoRef.current) {
-      videoRef.current.load();
+    
+    // إعادة تحميل الإطار
+    if (iframeRef.current) {
+      const src = iframeRef.current.src;
+      iframeRef.current.src = '';
+      setTimeout(() => {
+        if (iframeRef.current) iframeRef.current.src = src;
+      }, 100);
     }
   };
+
+  // إذا لم يكن هناك معرف للفيديو
+  if (!videoId && !isLoading && !error) {
+    return (
+      <div className="w-full h-screen flex items-center justify-center bg-gray-900">
+        <p className="text-white text-xl">لم يتم تعيين فيديو تعريفي</p>
+      </div>
+    );
+  }
 
   return (
     <div className="relative w-full h-screen overflow-hidden">
@@ -90,20 +103,15 @@ export default function IntroVideo() {
         </div>
       )}
       
-      <video
-        ref={videoRef}
-        className="w-full h-full object-cover"
-        playsInline
-        muted={isMuted}
-        loop
-        autoPlay
-        preload="auto"
-        poster="/images/poster.jpg" // تأكد من وجود هذه الصورة
-      >
-        <source src="/videos/intro.mp4" type="video/mp4" />
-        <source src="/videos/intro.webm" type="video/webm" />
-        متصفحك لا يدعم تشغيل الفيديو.
-      </video>
+      <iframe
+        ref={iframeRef}
+        src={`https://drive.google.com/file/d/${videoId}/preview?autoplay=1&mute=${isMuted ? 1 : 0}`}
+        className="w-full h-full border-0"
+        allow="autoplay; encrypted-media"
+        allowFullScreen
+        onLoad={handleIframeLoad}
+        onError={handleIframeError}
+      ></iframe>
       
       <div className="absolute bottom-10 right-10 z-10">
         <button
