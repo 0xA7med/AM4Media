@@ -4,7 +4,7 @@ interface IntroVideoProps {
   videoId: string;
 }
 
-const IntroVideo: React.FC<IntroVideoProps> = ({ videoId }) => {
+export const IntroVideo: React.FC<IntroVideoProps> = ({ videoId }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
@@ -47,6 +47,3 @@ const IntroVideo: React.FC<IntroVideoProps> = ({ videoId }) => {
     </div>
   );
 };
-
-
-export default IntroVideo;
