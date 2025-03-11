@@ -45,7 +45,7 @@ const IntroVideo: React.FC<IntroVideoProps> = ({ videoId }) => {
   }
 
   return (
-    <div className="intro-video-container relative w-full h-[600px] rounded-xl overflow-hidden shadow-lg">
+    <div className="intro-video-container relative w-full h-[100%] rounded-xl overflow-hidden shadow-lg">
       {loading && (
         <div className="absolute inset-0 flex items-center justify-center bg-gray-800">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
@@ -54,7 +54,7 @@ const IntroVideo: React.FC<IntroVideoProps> = ({ videoId }) => {
       
       <iframe
         ref={iframeRef}
-        src={`https://drive.google.com/file/d/${videoId}/preview?autoplay=1&mute=${isMuted ? 1 : 0}`}
+        src={`https://drive.google.com/file/d/${videoId}/preview? 1 : 0}`}
         width="100%"
         height="100%"
         allow="autoplay"

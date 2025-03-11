@@ -63,6 +63,15 @@ export default function HomePage() {
     setFormErrors({});
     
     try {
+      const formData = new FormData(formRef.current!);
+      
+      // إضافة الملفات المرفقة إذا وجدت
+      if (selectedFiles) {
+        selectedFiles.forEach((file, index) => {
+          formData.append(`file${index}`, file);
+        });
+      }
+
       const result = await emailjs.sendForm(
         'service_8t94fdu',
         'template_pw1o4yu',
