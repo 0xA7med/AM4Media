@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Video } from '../types';
 import VideoModal from './VideoModal';
+import Masonry from 'react-masonry-css';
 
 interface VideoGalleryProps {
   videos: Video[];
@@ -17,6 +18,14 @@ export default function VideoGallery({ videos }: VideoGalleryProps) {
   const filteredVideos = selectedCategory
     ? videos.filter(video => video.categories.includes(selectedCategory))
     : videos;
+
+  // تحديد عدد الأعمدة حسب عرض الشاشة
+  const breakpointColumnsObj = {
+    default: 3,
+    1100: 3,
+    700: 2,
+    500: 1
+  };
 
   return (
     <>
@@ -47,9 +56,13 @@ export default function VideoGallery({ videos }: VideoGalleryProps) {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <Masonry
+        breakpointCols={breakpointColumnsObj}
+        className="flex w-full -mr-8" // استخدام margin سالب للتعويض عن الفراغ
+        columnClassName="pl-8" // padding للعمود
+      >
         {filteredVideos.map((video) => (
-          <div key={video.id} className="relative group">
+          <div key={video.id} className="mb-8 relative group">
             <button
               onClick={() => setSelectedVideo(video.id)}
               className={`block relative overflow-hidden rounded-xl w-full ${
@@ -80,7 +93,7 @@ export default function VideoGallery({ videos }: VideoGalleryProps) {
             </button>
           </div>
         ))}
-      </div>
+      </Masonry>
 
       <VideoModal
         isOpen={!!selectedVideo}
