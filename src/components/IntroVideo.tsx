@@ -1,119 +1,115 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { useEffect, useRef, useState } from "react";
 
-export default function IntroVideo({ videoId }: IntroVideoProps) {
-  const [isMuted, setIsMuted] = useState(true);
-  const videoRef = useRef<HTMLIFrameElement>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
+export default function IntroVideo() {
+  const videoRef = useRef<HTMLVideoElement>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [hasError, setHasError] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [isMuted, setIsMuted] = useState(true);
 
   useEffect(() => {
-    // تأكد من وجود الفيديو
-    if (!videoId) {
-      setHasError(true);
-      return;
-    }
-    
-    // إعادة تعيين حالة التحميل عند تغيير الفيديو
-    setIsLoading(true);
-    setHasError(false);
-    
-    // تعيين حالة التشغيل بعد تحميل الصفحة
-    setIsPlaying(true);
-    
-    // إضافة مؤقت للتحقق من تحميل الفيديو
-    const loadTimeout = setTimeout(() => {
-      if (isLoading) {
-        setHasError(true);
-        console.error('فشل تحميل الفيديو: انتهت مهلة التحميل');
+    const video = videoRef.current;
+    if (!video) return;
+
+    const handleCanPlay = () => {
+      setIsLoading(false);
+      try {
+        video.play().catch(e => {
+          console.error("فشل تشغيل الفيديو تلقائيًا:", e);
+          setError("فشل تشغيل الفيديو تلقائيًا");
+        });
+      } catch (e) {
+        console.error("خطأ غير متوقع:", e);
+        setError("حدث خطأ أثناء تشغيل الفيديو");
       }
-    }, 20000); // 20 ثانية للتحميل
-    
-    return () => clearTimeout(loadTimeout);
-  }, [videoId]);
+    };
 
-  const handleIframeLoad = () => {
-    setIsLoading(false);
-  };
+    const handleError = () => {
+      setIsLoading(false);
+      setError("فشل تحميل الفيديو");
+      console.error("خطأ في تحميل الفيديو", video.error);
+    };
 
-  const handleIframeError = () => {
-    setIsLoading(false);
-    setHasError(true);
-    console.error('فشل تحميل الفيديو');
-  };
+    // إضافة مستمع لأحداث تحميل الفيديو والأخطاء
+    video.addEventListener("canplay", handleCanPlay);
+    video.addEventListener("error", handleError);
+
+    // تأكد من أن الفيديو يحاول التحميل
+    video.load();
+
+    // إضافة مهلة زمنية للكشف عن مشاكل التحميل
+    const timeoutId = setTimeout(() => {
+      if (isLoading && !video.readyState) {
+        setError("استغرق تحميل الفيديو وقتًا طويلاً، يرجى التحقق من اتصالك بالإنترنت");
+      }
+    }, 15000);
+
+    return () => {
+      clearTimeout(timeoutId);
+      video.removeEventListener("canplay", handleCanPlay);
+      video.removeEventListener("error", handleError);
+    };
+  }, [isLoading]);
 
   const toggleMute = () => {
-    setIsMuted(!isMuted);
     if (videoRef.current) {
-      try {
-        const message = isMuted ? 'unmute' : 'mute';
-        videoRef.current.contentWindow?.postMessage(message, '*');
-      } catch (error) {
-        console.error('خطأ في التحكم بالصوت:', error);
-      }
+      videoRef.current.muted = !videoRef.current.muted;
+      setIsMuted(!isMuted);
     }
   };
 
   const retryLoading = () => {
     setIsLoading(true);
-    setHasError(false);
-    // إعادة تحميل الإطار
+    setError(null);
     if (videoRef.current) {
-      const src = videoRef.current.src;
-      videoRef.current.src = '';
-      setTimeout(() => {
-        if (videoRef.current) videoRef.current.src = src;
-      }, 100);
+      videoRef.current.load();
     }
   };
-
-  // إذا لم يكن هناك فيديو
-  if (!videoId) {
-    return (
-      <div className="w-full h-screen flex items-center justify-center bg-gray-900">
-        <p className="text-white text-xl">لم يتم تعيين فيديو تعريفي</p>
-      </div>
-    );
-  }
 
   return (
     <div className="relative w-full h-screen overflow-hidden">
       {isLoading && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-900 z-20">
-          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-primary mb-4"></div>
-          <p className="text-white">جاري تحميل الفيديو...</p>
+        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-70 z-10">
+          <div className="flex flex-col items-center">
+            <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-primary mb-4"></div>
+            <p className="text-white text-lg">جاري تحميل الفيديو...</p>
+          </div>
         </div>
       )}
       
-      {hasError && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-900 z-20">
-          <p className="text-red-500 text-xl mb-4">حدثت مشكلة أثناء تحميل الفيديو</p>
-          <button 
-            onClick={retryLoading}
-            className="px-4 py-2 bg-primary text-white rounded-md hover:bg-blue-600 transition"
-          >
-            إعادة المحاولة
-          </button>
+      {error && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-70 z-10">
+          <div className="bg-white p-6 rounded-md shadow-lg max-w-md text-center">
+            <p className="text-red-500 mb-4 text-lg">{error}</p>
+            <button 
+              className="px-4 py-2 bg-primary text-white rounded-md hover:bg-blue-600 transition"
+              onClick={retryLoading}
+            >
+              إعادة المحاولة
+            </button>
+          </div>
         </div>
       )}
       
-      <div className="absolute inset-0">
-        <iframe
-          ref={videoRef}
-          src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&controls=0&showinfo=0&rel=0&loop=1&playlist=${videoId}`}
-          className="w-full h-full"
-          frameBorder="0"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowFullScreen
-          onLoad={handleIframeLoad}
-          onError={handleIframeError}
-        ></iframe>
-      </div>
+      <video
+        ref={videoRef}
+        className="w-full h-full object-cover"
+        playsInline
+        muted={isMuted}
+        loop
+        autoPlay
+        preload="auto"
+        poster="/images/poster.jpg" // تأكد من وجود هذه الصورة
+      >
+        <source src="/videos/intro.mp4" type="video/mp4" />
+        <source src="/videos/intro.webm" type="video/webm" />
+        متصفحك لا يدعم تشغيل الفيديو.
+      </video>
       
       <div className="absolute bottom-10 right-10 z-10">
         <button
           onClick={toggleMute}
-          className="p-3 bg-black bg-opacity-50 rounded-full hover:bg-opacity-70 transition"
+          className="p-3 bg-black bg-opacity-50 rounded-full hover:bg-opacity-70 transition-all"
+          aria-label={isMuted ? "تشغيل الصوت" : "كتم الصوت"}
         >
           {isMuted ? (
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
