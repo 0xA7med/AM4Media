@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Video } from '../types';
 import VideoModal from './VideoModal';
 import Masonry from 'react-masonry-css';
@@ -9,8 +9,28 @@ interface VideoGalleryProps {
 
 export default function VideoGallery({ videos }: VideoGalleryProps) {
   const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(['all']);
+
+  const handleCategoryChange = (category: string) => {
+    if (category === 'all') {
+      setSelectedCategories(['all']);
+      return;
+    }
+    
+    let newCategories = selectedCategories.filter(cat => cat !== 'all');
+    
+    if (selectedCategories.includes(category)) {
+      newCategories = newCategories.filter(cat => cat !== category);
+      if (newCategories.length === 0) {
+        newCategories = ['all'];
+      }
+    } else {
+      newCategories.push(category);
+    }
+    
+    setSelectedCategories(newCategories);
+  };
+
   // Get unique categories from all videos
   const categories = Array.from(new Set(videos.flatMap(video => video.categories)));
   
@@ -19,10 +39,14 @@ export default function VideoGallery({ videos }: VideoGalleryProps) {
     return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
   });
 
-  // تصفية الفيديوهات بعد الترتيب
-  const filteredVideos = selectedCategory
-    ? sortedVideos.filter(video => video.categories.includes(selectedCategory))
-    : sortedVideos;
+  const filteredVideos = useMemo(() => {
+    if (selectedCategories.includes('all')) {
+      return sortedVideos;
+    }
+    return sortedVideos.filter(video => 
+      selectedCategories.some(cat => video.categories.includes(cat))
+    );
+  }, [sortedVideos, selectedCategories]);
 
   // تحديد عدد الأعمدة حسب عرض الشاشة
   const breakpointColumnsObj = {
@@ -35,26 +59,23 @@ export default function VideoGallery({ videos }: VideoGalleryProps) {
   return (
     <>
       {/* Categories Filter */}
-      <div className="mb-8 flex flex-wrap gap-3 justify-center">
+      <div className="flex flex-wrap justify-center gap-3 mb-8">
         <button
-          onClick={() => setSelectedCategory(null)}
           className={`px-4 py-2 rounded-full transition-colors ${
-            selectedCategory === null
-              ? 'bg-blue-500 text-white'
-              : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+            selectedCategories.includes('all') ? 'bg-blue-600 text-white' : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
           }`}
+          onClick={() => handleCategoryChange('all')}
         >
           الكل
         </button>
-        {categories.map((category) => (
+        
+        {categories.map(category => (
           <button
             key={category}
-            onClick={() => setSelectedCategory(category)}
             className={`px-4 py-2 rounded-full transition-colors ${
-              selectedCategory === category
-                ? 'bg-blue-500 text-white'
-                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+              selectedCategories.includes(category) ? 'bg-blue-600 text-white' : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
             }`}
+            onClick={() => handleCategoryChange(category)}
           >
             {category}
           </button>

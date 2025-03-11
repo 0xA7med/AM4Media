@@ -167,7 +167,8 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                 AM 4 Media
               </h1>
               <p className="text-xl md:text-2xl text-gray-300 mb-8">
-                نحول أفكارك إلى واقع مرئي مع فريق محترف من المبدعين
+              نستمع لأفكارك ونفهم أهدافك، ثم نحولها إلى إبداع مرئي متقن يلهم المشاهدين ويجذبهم. فريقنا المحترف يمزج بين الإبداع والخبرة لتقديم محتوى يتجاوز توقعاتك
+              {/* نمنح أفكارك حياة على الشاشة بإبداع يتخطى الحدود. نجمع بين الفن والتقنية لنقدم محتوى مرئياً يعبر عن هويتك ويصل إلى قلوب جمهورك */}
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
                 <a
@@ -175,7 +176,7 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                   className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-3 rounded-full text-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105"
                 >
                   <MessageCircle className="w-5 h-5" />
-                  تواصل معنا
+                  طلب خدمة
                 </a>
                 <a
                   href="https://wa.me/201026043165"
@@ -183,7 +184,7 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                   rel="noopener noreferrer"
                   className="inline-flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-full text-lg font-semibold transition-all duration-300 transform hover:scale-105"
                 >
-                  طلب خدمة عبر واتساب
+                  تواصل معنا عبر واتساب
                 </a>
               </div>
             </div>
@@ -414,7 +415,7 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
             </form>
           </div>
     
-          <div className="mt-10 p-6 bg-gradient-to-br from-gray-800/50 to-gray-900/60 rounded-xl backdrop-blur-sm shadow-lg border border-gray-700/30">
+          {/* <div className="mt-10 p-6 bg-gradient-to-br from-gray-800/50 to-gray-900/60 rounded-xl backdrop-blur-sm shadow-lg border border-gray-700/30">
             <h3 className="text-xl font-bold text-white mb-4">وسائل أخرى للتواصل</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <a href="mailto:info@ammedia.com" className="flex items-center gap-3 p-4 bg-gray-700/40 rounded-lg hover:bg-gray-700/70 transition-colors transform hover:-translate-y-1 duration-300">
@@ -426,7 +427,7 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                 <span>+201026043165</span>
               </a>
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
     </section>
