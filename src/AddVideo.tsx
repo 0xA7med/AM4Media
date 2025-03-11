@@ -1,10 +1,73 @@
 import { useState } from "react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Textarea } from "@/components/ui/textarea";
+
+
+// مكونات بسيطة
+const Input = ({ type, value, onChange, placeholder, className, ...props }) => (
+  <input
+    type={type}
+    value={value}
+    onChange={onChange}
+    placeholder={placeholder}
+    className={`w-full p-2 border rounded-md ${className}`}
+    {...props}
+  />
+);
+
+const Button = ({ onClick, children, className, ...props }) => (
+  <button
+    onClick={onClick}
+    className={`px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 ${className}`}
+    {...props}
+  >
+    {children}
+  </button>
+);
+
+const Card = ({ children, className, ...props }) => (
+  <div className={`bg-white dark:bg-gray-800 rounded-lg shadow-md ${className}`} {...props}>
+    {children}
+  </div>
+);
+
+const CardContent = ({ children, className, ...props }) => (
+  <div className={`p-4 ${className}`} {...props}>
+    {children}
+  </div>
+);
+
+const Label = ({ children, className, ...props }) => (
+  <label className={`block text-sm font-medium mb-1 ${className}`} {...props}>
+    {children}
+  </label>
+);
+const RadioGroup = ({ value, onValueChange, children, className, ...props }) => (
+  <div className={`space-y-2 ${className}`} {...props}>
+    {children}
+  </div>
+);
+
+
+const RadioGroupItem = ({ value, id, className, ...props }) => (
+  <div className="flex items-center space-x-2">
+    <input
+      type="radio"
+      id={id}
+      value={value}
+      className={className}
+      {...props}
+    />
+  </div>
+);
+
+const Textarea = ({ value, onChange, placeholder, className, ...props }) => (
+  <textarea
+    value={value}
+    onChange={onChange}
+    placeholder={placeholder}
+    className={`w-full p-2 border rounded-md ${className}`}
+    {...props}
+  />
+);
 
 const SECRET_PASSWORD = "353567"; // كلمة المرور
 
