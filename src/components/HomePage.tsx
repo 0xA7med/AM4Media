@@ -5,7 +5,7 @@ import VideoSlider from './VideoSlider';
 import IntroVideo from './IntroVideo';
 import { useVideos } from '../videoStore';
 import emailjs from '@emailjs/browser';
-
+import { MessageCircle, Upload } from 'lucide-react';  // أو من أي مكتبة أخرى تستخدمها للأيقونات
 // Initialize EmailJS
 emailjs.init("HLBCVhf1ZCFwFRH2T");
 
