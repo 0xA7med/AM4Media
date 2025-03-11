@@ -12,7 +12,7 @@
     }
   ],
   "routes": [
-    { "handle": "filesystem" },
+    { "src": "/admin/videos", "dest": "/index.html" },
     { "src": "/.*", "dest": "/index.html" }
   ]
 }
