@@ -8,7 +8,7 @@ import emailjs from '@emailjs/browser';
 // تهيئة EmailJS
 emailjs.init("HLBCVhf1ZCFwFRH2T"); 
 
-function App() {
+function HomePage() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [formData, setFormData] = useState({
@@ -454,6 +454,18 @@ function App() {
         </div>
       </footer>
     </div>
+  );
+}
+
+function App() {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/addvideo" element={<AddVideo />} />
+        <Route path="*" element={<HomePage />} />
+      </Routes>
+    </Router>
   );
 }
 
