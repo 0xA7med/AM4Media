@@ -198,7 +198,7 @@ export default function AdminPanel() {
     if (selectedVideo) {
       const introVideo: IntroVideo = {
         id: selectedVideo.id,
-        url: selectedVideo.url,
+        url: selectedVideo.url || selectedVideo.driveUrl,
         thumbnail: `https://drive.google.com/thumbnail?id=${selectedVideo.id}&sz=w1000`
       };
       setIntroVideo(introVideo);

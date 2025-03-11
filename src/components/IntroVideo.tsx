@@ -36,11 +36,15 @@ export default function IntroVideo({ videoId }: IntroVideoProps) {
     setIsMuted(!isMuted);
   };
 
+  const videoSrc = videoId.includes('drive.google.com') 
+  ? videoId  // استخدام الرابط كاملاً إذا كان بتنسيق URL
+  : `https://drive.google.com/file/d/${videoId}/preview?`;
+
   return (
     <div className="relative w-full h-full">
       <iframe
         ref={iframeRef}
-        src={`https://drive.google.com/file/d/${videoId}/preview?`}
+        src={videoSrc}
         className="w-full h-full border-0"
         allow="autoplay; encrypted-media"
         allowFullScreen
