@@ -36,6 +36,7 @@ export default function VideoGallery({ videos }: VideoGalleryProps) {
   
   // ترتيب الفيديوهات بحيث تكون الأحدث في الأعلى
   const sortedVideos = useMemo(() => {
+    if (!videos || videos.length === 0) return [];
     return [...videos].sort((a, b) => {
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     });

@@ -45,8 +45,6 @@ export default function IntroVideo({ videoId }: IntroVideoProps) {
       <iframe
         ref={iframeRef}
         src={videoSrc}
-        className="w-full h-full border-0"
-        allow="autoplay; encrypted-media"
         allowFullScreen
         onLoad={handleIframeLoad}
         onError={handleIframeError}
