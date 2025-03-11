@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { videos as appVideos } from './App';
 import { useVideos, addVideo, updateVideo, deleteVideo, Video } from './videoStore';
 
 // استيراد الأيقونات
@@ -112,7 +111,7 @@ export default function AddVideo() {
   const [editingVideo, setEditingVideo] = useState(null);
   const [showVideoList, setShowVideoList] = useState(true);
   const [thumbnailPreview, setThumbnailPreview] = useState("");
-  const [videos, setVideos] = useState(appVideos);
+  const videos = useVideos();
 
   const [thumbnailOptions, setThumbnailOptions] = useState([]);
   const [isLoadingThumbnails, setIsLoadingThumbnails] = useState(false);
