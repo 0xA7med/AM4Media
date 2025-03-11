@@ -148,7 +148,12 @@ const getSavedVideos = (): Video[] => {
   const notifyListeners = () => {
     listeners.forEach(listener => listener(videosState));
   };
-  
+  // إضافة فيديو جديد
+  export const addVideo = (video: Video) => {
+    videosState = [...videosState, video];
+    saveVideosToStorage(videosState);
+    notifyListeners();
+  };
 
   
   // تحديث فيديو موجود
