@@ -1,33 +1,38 @@
 import React, { useState, useEffect } from 'react';
-import { useVideos, addVideo, updateVideo, deleteVideo, Video } from './videoStore';
+import { addVideo } from './videoStore';
+import { videoStructure } from './videos';
+import { useNavigate } from 'react-router-dom';
 
 // استيراد الأيقونات
 // يمكنك إزالة هذا السطر إذا كانت مكتبة lucide-react غير متوفرة
 // import { Copy, Check, Eye, X, Plus, Trash, Edit2, ArrowLeft } from 'lucide-react';
 
 // دالة لاستخراج معرف الفيديو من رابط جوجل درايف
-function extractGoogleDriveId(url) {
-  if (!url) return null;
-  
-  // نمط للبحث عن معرف جوجل درايف في الرابط
-  const patterns = [
-    /\/file\/d\/([^\/]+)/,           // https://drive.google.com/file/d/FILEID/view
-    /id=([^&]+)/,                    // https://drive.google.com/open?id=FILEID
-    /\/d\/([^\/]+)/,                 // https://drive.google.com/d/FILEID/view
-    /^([a-zA-Z0-9_-]{25,})/          // المعرف مباشرة
-  ];
-  
-  for (const pattern of patterns) {
-    const match = url.match(pattern);
-    if (match && match[1]) {
-      return match[1];
+const getGoogleDriveId = (url: string): string => {
+  try {
+    if (!url) return null;
+    
+    // نمط للبحث عن معرف جوجل درايف في الرابط
+    const patterns = [
+      /\/file\/d\/([^\/]+)/,           // https://drive.google.com/file/d/FILEID/view
+      /id=([^&]+)/,                    // https://drive.google.com/open?id=FILEID
+      /\/d\/([^\/]+)/,                 // https://drive.google.com/d/FILEID/view
+      /^([a-zA-Z0-9_-]{25,})/          // المعرف مباشرة
+    ];
+    
+    for (const pattern of patterns) {
+      const match = url.match(pattern);
+      if (match && match[1]) {
+        return match[1];
+      }
     }
+    
+    return null;
+  } catch (error) {
+    console.error('خطأ في استخراج معرف جوجل درايف:', error);
+    return '';
   }
-  
-  return null;
 }
-
-const SECRET_PASSWORD = "353567"; // كلمة المرور
 
 // مكونات بسيطة
 const Input = ({ type, value, onChange, placeholder, className, ...props }) => (
@@ -99,20 +104,18 @@ const RadioGroupItem = ({ value, id, className, ...props }) => (
 );
 
 export default function AddVideo() {
-  const [password, setPassword] = useState("");
-  const [authenticated, setAuthenticated] = useState(false);
-  const [videoTitle, setVideoTitle] = useState("");
-  const [videoDescription, setVideoDescription] = useState("");
-  const [videoThumbnail, setVideoThumbnail] = useState("");
-  const [videoAspectRatio, setVideoAspectRatio] = useState("square");
-  const [videoUrl, setVideoUrl] = useState("");
-  const [videoCategories, setVideoCategories] = useState([]);
-  const [newCategory, setNewCategory] = useState("");
-  const [editingVideo, setEditingVideo] = useState(null);
-  const [showVideoList, setShowVideoList] = useState(true);
-  const [thumbnailPreview, setThumbnailPreview] = useState("");
-  const videos = useVideos();
-
+  const navigate = useNavigate();
+  const [videoData, setVideoData] = useState({
+    ...videoStructure,
+    id: '',
+    title: '',
+    description: '',
+    categories: [],
+    thumbnail: '',
+    aspectRatio: 'square',
+  });
+  
+  const [selectedCategories, setSelectedCategories] = useState([]);
   const [thumbnailOptions, setThumbnailOptions] = useState([]);
   const [isLoadingThumbnails, setIsLoadingThumbnails] = useState(false);
   const [copiedCode, setCopiedCode] = useState(false);
@@ -137,16 +140,14 @@ export default function AddVideo() {
       `https://drive.google.com/thumbnail?id=${videoId}&sz=w2000`
     ];
   };
-// باقي الكود...
 
-  // باقي الكود يبقى كما هو...
   const handleExtractThumbnails = () => {
-    if (!videoUrl.trim()) {
+    if (!videoData.url.trim()) {
       alert("يرجى إدخال رابط الفيديو أولاً");
       return;
     }
     
-    const videoId = extractGoogleDriveId(videoUrl);
+    const videoId = getGoogleDriveId(videoData.url);
     if (!videoId) {
       alert("لم يتم العثور على معرف الفيديو في الرابط");
       return;
@@ -158,369 +159,195 @@ export default function AddVideo() {
     setIsLoadingThumbnails(false);
     
     if (options.length > 0) {
-      setVideoThumbnail(options[0]);
-      setThumbnailPreview(options[0]);
+      setVideoData({ ...videoData, thumbnail: options[0] });
     }
   };
 
   const handleCopyCode = () => {
-    const videoData = editingVideo || {
-      id: Date.now().toString(),
-      title: videoTitle,
-      description: videoDescription,
-      thumbnail: videoThumbnail,
-      aspectRatio: videoAspectRatio,
-      url: videoUrl,
-      categories: [...videoCategories]
-    };
-    
-    const codeString = JSON.stringify(videoData, null, 2);
-    navigator.clipboard.writeText(codeString);
+    const videoDataString = JSON.stringify(videoData, null, 2);
+    navigator.clipboard.writeText(videoDataString);
     setCopiedCode(true);
     setTimeout(() => setCopiedCode(false), 2000);
   };
 
-  const handleAddCategory = () => {
-    if (newCategory.trim() && !videoCategories.includes(newCategory.trim())) {
-      setVideoCategories([...videoCategories, newCategory.trim()]);
-      setNewCategory("");
-    }
-  };
-
-  const handleRemoveCategory = (category) => {
-    setVideoCategories(videoCategories.filter(cat => cat !== category));
-  };
-
-    const handleSaveVideo = () => {
-    if (!videoTitle.trim() || !videoUrl.trim() || !videoThumbnail.trim()) {
-      alert("يرجى ملء جميع الحقول المطلوبة");
-      return;
-    }
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
     
-    const newVideo: Video = {
-      id: editingVideo ? editingVideo.id : Date.now().toString(),
-      title: videoTitle,
-      description: videoDescription,
-      thumbnail: videoThumbnail,
-      aspectRatio: videoAspectRatio,
-      url: videoUrl,
-      categories: [...videoCategories]
+    // التأكد من توافق البيانات مع الهيكل المطلوب
+    const newVideo = {
+      ...videoData,
+      id: videoData.id,
+      categories: selectedCategories,
     };
     
-    if (editingVideo) {
-      // تحديث فيديو موجود
-      updateVideo(newVideo);
-    } else {
-      // إضافة فيديو جديد
-      addVideo(newVideo);
-    }
+    // استخدام دالة addVideo المحدثة التي ستقوم بإرسال البيانات للسيرفر
+    addVideo(newVideo);
     
-    // إعادة تعيين النموذج
-    resetForm();
-    setShowVideoList(true);
+    // إعادة توجيه المستخدم للصفحة الرئيسية
+    navigate('/');
   };
-
-  const handleEditVideo = (video) => {
-    setEditingVideo(video);
-    setVideoTitle(video.title);
-    setVideoDescription(video.description || "");
-    setVideoThumbnail(video.thumbnail);
-    setVideoAspectRatio(video.aspectRatio || "square");
-    setVideoUrl(video.url);
-    setVideoCategories(video.categories || []);
-    setThumbnailPreview(video.thumbnail);
-    setShowVideoList(false);
-  };
-
-  
-  const handleDeleteVideo = (videoId: string) => {
-    if (window.confirm("هل أنت متأكد من حذف هذا الفيديو؟")) {
-      deleteVideo(videoId);
-    }
-  };
-
-  const resetForm = () => {
-    setVideoTitle("");
-    setVideoDescription("");
-    setVideoThumbnail("");
-    setVideoAspectRatio("square");
-    setVideoUrl("");
-    setVideoCategories([]);
-    setNewCategory("");
-    setEditingVideo(null);
-    setThumbnailPreview("");
-    setThumbnailOptions([]);
-  };
-
-  const handleAuthenticate = () => {
-    if (password === SECRET_PASSWORD) {
-      setAuthenticated(true);
-    } else {
-      alert("كلمة المرور غير صحيحة");
-    }
-  };
-
-
-  if (!authenticated) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900">
-        <Card className="w-full max-w-md">
-          <CardContent>
-            <h2 className="text-2xl font-bold mb-4 text-center">تسجيل الدخول</h2>
-            <div className="space-y-4">
-              <div>
-                <label htmlFor="password" className="block mb-2">كلمة المرور</label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="أدخل كلمة المرور"
-                />
-              </div>
-              <Button onClick={handleAuthenticate} className="w-full">
-                دخول
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
 
   return (
     <div className="container mx-auto p-4 bg-gray-100 dark:bg-gray-900 min-h-screen">
-      {showVideoList ? (
-        <div>
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-3xl font-bold">قائمة الفيديوهات</h1>
-            <Button onClick={() => setShowVideoList(false)}>إضافة فيديو جديد</Button>
-          </div>
+      <Button onClick={() => navigate('/')} className="mb-4">
+        <IconArrowLeft /> العودة إلى القائمة
+      </Button>
+      
+      <Card>
+        <CardContent>
+          <h2 className="text-2xl font-bold mb-6">
+            إضافة فيديو جديد
+          </h2>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {videos.map(video => (
-              <Card key={video.id} className="overflow-hidden">
-                <div className="relative">
-                  <img 
-                    src={video.thumbnail} 
-                    alt={video.title} 
-                    className={`w-full ${video.aspectRatio === "square" ? "aspect-square" : "aspect-video"} object-cover`}
-                  />
-                </div>
-                <CardContent>
-                  <h2 className="text-xl font-bold mb-2">{video.title}</h2>
-                  {video.description && (
-                    <p className="text-gray-600 dark:text-gray-300 mb-4 line-clamp-2">{video.description}</p>
-                  )}
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {video.categories?.map(category => (
-                      <span key={category} className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-100 rounded-full text-sm">
-                        {category}
-                      </span>
-                    ))}
-                  </div>
-                  <div className="flex justify-end">
-                    <Button onClick={() => handleEditVideo(video)} className="p-1 mr-2">
-                      <IconEdit />
-                    </Button>
-                    <Button onClick={() => handleDeleteVideo(video.id)} className="p-1 bg-red-600">
-                      <IconTrash />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-          
-          {videos.length === 0 && (
-            <div className="text-center p-8 bg-white dark:bg-gray-800 rounded-lg shadow">
-              <p className="text-xl">لا توجد فيديوهات. أضف فيديو جديد للبدء.</p>
+          <div className="space-y-6">
+            <div>
+              <label htmlFor="videoTitle" className="block mb-2">عنوان الفيديو</label>
+              <Input
+                id="videoTitle"
+                value={videoData.title}
+                onChange={(e) => setVideoData({ ...videoData, title: e.target.value })}
+                placeholder="أدخل عنوان الفيديو"
+              />
             </div>
-          )}
-        </div>
-      ) : (
-        <div>
-          <Button onClick={() => setShowVideoList(true)} className="mb-4">
-            <IconArrowLeft /> العودة إلى القائمة
-          </Button>
-          
-          <Card>
-            <CardContent>
-              <h2 className="text-2xl font-bold mb-6">
-                {editingVideo ? "تعديل الفيديو" : "إضافة فيديو جديد"}
-              </h2>
-              
-              <div className="space-y-6">
-                <div>
-                  <label htmlFor="videoTitle" className="block mb-2">عنوان الفيديو</label>
-                  <Input
-                    id="videoTitle"
-                    value={videoTitle}
-                    onChange={(e) => setVideoTitle(e.target.value)}
-                    placeholder="أدخل عنوان الفيديو"
-                  />
-                </div>
-                
-                <div>
-                  <label htmlFor="videoDescription" className="block mb-2">وصف الفيديو (اختياري)</label>
-                  <textarea
-                    id="videoDescription"
-                    value={videoDescription}
-                    onChange={(e) => setVideoDescription(e.target.value)}
-                    placeholder="أدخل وصف الفيديو"
-                    className="w-full p-2 border rounded-md"
-                    rows={3}
-                  />
-                </div>
-                
-                <div>
-                  <label htmlFor="videoUrl" className="block mb-2">رابط الفيديو (جوجل درايف)</label>
-                  <div className="flex">
-                    <Input
-                      id="videoUrl"
-                      value={videoUrl}
-                      onChange={(e) => setVideoUrl(e.target.value)}
-                      placeholder="أدخل رابط الفيديو من جوجل درايف"
-                      className="flex-1"
-                    />
-                    <Button onClick={handleExtractThumbnails} className="mr-2">
-                      استخراج الصور المصغرة
-                    </Button>
-                    <Button onClick={handleCopyCode} className="p-1 mr-2">
-                      {copiedCode ? <IconCheck /> : <IconCopy />}
-                    </Button>
-                    <Button onClick={() => window.open(videoUrl, '_blank')} className="p-1">
-                      <IconEye />
-                    </Button>
-                  </div>
-                </div>
-                
-                <div>
-                  <label className="block mb-2">نسبة العرض إلى الارتفاع</label>
-                  <RadioGroup
-                    value={videoAspectRatio}
-                    onValueChange={setVideoAspectRatio}
-                    className="flex space-x-4"
-                  >
-                    <div className="flex items-center">
-                      <RadioGroupItem
-                        value="square"
-                        id="square"
-                        name="aspectRatio"
-                        checked={videoAspectRatio === "square"}
-                        onChange={() => setVideoAspectRatio("square")}
-                      />
-                      <label htmlFor="square" className="mr-2">مربع (1:1)</label>
-                    </div>
-                    <div className="flex items-center">
-                      <RadioGroupItem
-                        value="video"
-                        id="video"
-                        name="aspectRatio"
-                        checked={videoAspectRatio === "video"}
-                        onChange={() => setVideoAspectRatio("video")}
-                      />
-                      <label htmlFor="video" className="mr-2">فيديو (16:9)</label>
-                    </div>
-                  </RadioGroup>
-                </div>
-                
-                <div>
-                  <label className="block mb-2">الصورة المصغرة</label>
-                  {isLoadingThumbnails ? (
-                    <p>جاري تحميل الصور المصغرة...</p>
-                  ) : thumbnailOptions.length > 0 ? (
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                      {thumbnailOptions.map((thumbnail, index) => (
-                        <div 
-                          key={index}
-                          className={`cursor-pointer border-2 rounded-md overflow-hidden ${videoThumbnail === thumbnail ? 'border-blue-500' : 'border-transparent'}`}
-                          onClick={() => {
-                            setVideoThumbnail(thumbnail);
-                            setThumbnailPreview(thumbnail);
-                          }}
-                        >
-                          <img 
-                            src={thumbnail} 
-                            alt={`صورة مصغرة ${index + 1}`} 
-                            className={`w-full ${videoAspectRatio === "square" ? "aspect-square" : "aspect-video"} object-cover`}
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="mb-4">استخرج الصور المصغرة من رابط الفيديو أو أدخل رابط الصورة المصغرة يدويًا.</p>
-                  )}
-                  
-                  <Input
-                    value={videoThumbnail}
-                    onChange={(e) => {
-                      setVideoThumbnail(e.target.value);
-                      setThumbnailPreview(e.target.value);
-                    }}
-                    placeholder="أدخل رابط الصورة المصغرة"
-                  />
-                  
-                  {thumbnailPreview && (
-                    <div className="mt-4">
-                      <p className="mb-2">معاينة الصورة المصغرة:</p>
-                      <div className="border rounded-md overflow-hidden">
-                        <img 
-                          src={thumbnailPreview} 
-                          alt="معاينة الصورة المصغرة" 
-                          className={`w-full ${videoAspectRatio === "square" ? "aspect-square" : "aspect-video"} object-cover`}
-                          onError={() => setThumbnailPreview("")}
-                        />
-                      </div>
-                    </div>
-                  )}
-                </div>
-                
-                <div>
-                  <label className="block mb-2">التصنيفات</label>
-                  <div className="flex mb-2">
-                    <Input
-                      value={newCategory}
-                      onChange={(e) => setNewCategory(e.target.value)}
-                      placeholder="أضف تصنيفًا جديدًا"
-                      className="flex-1"
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault();
-                          handleAddCategory();
-                        }
-                      }}
-                    />
-                    <Button onClick={handleAddCategory} className="p-2">
-                      <IconPlus />
-                    </Button>
-                  </div>
-                  
-                  <div className="flex flex-wrap gap-2">
-                    {videoCategories.map(category => (
-                      <div key={category} className="flex items-center bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-100 px-3 py-1 rounded-full">
-                        {category}
-                        <Button onClick={() => handleRemoveCategory(category)} className="p-1 ml-2">
-                          <IconX />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                
-                <div className="flex justify-end space-x-4">
-                  <Button onClick={resetForm} className="bg-gray-500">
-                    إعادة تعيين
-                  </Button>
-                  <Button onClick={handleSaveVideo}>
-                    {editingVideo ? "تحديث الفيديو" : "إضافة الفيديو"}
-                  </Button>
-                </div>
+            
+            <div>
+              <label htmlFor="videoDescription" className="block mb-2">وصف الفيديو (اختياري)</label>
+              <textarea
+                id="videoDescription"
+                value={videoData.description}
+                onChange={(e) => setVideoData({ ...videoData, description: e.target.value })}
+                placeholder="أدخل وصف الفيديو"
+                className="w-full p-2 border rounded-md"
+                rows={3}
+              />
+            </div>
+            
+            <div>
+              <label htmlFor="videoUrl" className="block mb-2">رابط الفيديو (جوجل درايف)</label>
+              <div className="flex">
+                <Input
+                  id="videoUrl"
+                  value={videoData.url}
+                  onChange={(e) => setVideoData({ ...videoData, url: e.target.value })}
+                  placeholder="أدخل رابط الفيديو من جوجل درايف"
+                  className="flex-1"
+                />
+                <Button onClick={handleExtractThumbnails} className="mr-2">
+                  استخراج الصور المصغرة
+                </Button>
+                <Button onClick={handleCopyCode} className="p-1 mr-2">
+                  {copiedCode ? <IconCheck /> : <IconCopy />}
+                </Button>
+                <Button onClick={() => window.open(videoData.url, '_blank')} className="p-1">
+                  <IconEye />
+                </Button>
               </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
+            </div>
+            
+            <div>
+              <label className="block mb-2">نسبة العرض إلى الارتفاع</label>
+              <RadioGroup
+                value={videoData.aspectRatio}
+                onValueChange={(value) => setVideoData({ ...videoData, aspectRatio: value })}
+                className="flex space-x-4"
+              >
+                <div className="flex items-center">
+                  <RadioGroupItem
+                    value="square"
+                    id="square"
+                    name="aspectRatio"
+                    checked={videoData.aspectRatio === "square"}
+                    onChange={() => setVideoData({ ...videoData, aspectRatio: "square" })}
+                  />
+                  <label htmlFor="square" className="mr-2">مربع (1:1)</label>
+                </div>
+                <div className="flex items-center">
+                  <RadioGroupItem
+                    value="video"
+                    id="video"
+                    name="aspectRatio"
+                    checked={videoData.aspectRatio === "video"}
+                    onChange={() => setVideoData({ ...videoData, aspectRatio: "video" })}
+                  />
+                  <label htmlFor="video" className="mr-2">فيديو (16:9)</label>
+                </div>
+              </RadioGroup>
+            </div>
+            
+            <div>
+              <label className="block mb-2">الصورة المصغرة</label>
+              {isLoadingThumbnails ? (
+                <p>جاري تحميل الصور المصغرة...</p>
+              ) : thumbnailOptions.length > 0 ? (
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                  {thumbnailOptions.map((thumbnail, index) => (
+                    <div 
+                      key={index}
+                      className={`cursor-pointer border-2 rounded-md overflow-hidden ${videoData.thumbnail === thumbnail ? 'border-blue-500' : 'border-transparent'}`}
+                      onClick={() => setVideoData({ ...videoData, thumbnail })}
+                    >
+                      <img 
+                        src={thumbnail} 
+                        alt={`صورة مصغرة ${index + 1}`} 
+                        className={`w-full ${videoData.aspectRatio === "square" ? "aspect-square" : "aspect-video"} object-cover`}
+                      />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="mb-4">استخرج الصور المصغرة من رابط الفيديو أو أدخل رابط الصورة المصغرة يدويًا.</p>
+              )}
+              
+              <Input
+                value={videoData.thumbnail}
+                onChange={(e) => setVideoData({ ...videoData, thumbnail: e.target.value })}
+                placeholder="أدخل رابط الصورة المصغرة"
+              />
+            </div>
+            
+            <div>
+              <label className="block mb-2">التصنيفات</label>
+              <div className="flex mb-2">
+                <Input
+                  value={''}
+                  onChange={(e) => setSelectedCategories([...selectedCategories, e.target.value])}
+                  placeholder="أضف تصنيفًا جديدًا"
+                  className="flex-1"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      setSelectedCategories([...selectedCategories, e.target.value]);
+                    }
+                  }}
+                />
+                <Button onClick={() => setSelectedCategories([...selectedCategories, ''])} className="p-2">
+                  <IconPlus />
+                </Button>
+              </div>
+              
+              <div className="flex flex-wrap gap-2">
+                {selectedCategories.map((category, index) => (
+                  <div key={index} className="flex items-center bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-100 px-3 py-1 rounded-full">
+                    {category}
+                    <Button onClick={() => setSelectedCategories(selectedCategories.filter((cat, i) => i !== index))} className="p-1 ml-2">
+                      <IconX />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            <div className="flex justify-end space-x-4">
+              <Button onClick={() => setVideoData(videoStructure)} className="bg-gray-500">
+                إعادة تعيين
+              </Button>
+              <Button onClick={handleSubmit}>
+                إضافة الفيديو
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
