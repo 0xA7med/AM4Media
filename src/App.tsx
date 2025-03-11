@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Camera, Play, Edit, Monitor, Users, Phone, ChevronDown, Facebook, Instagram, Twitter, Youtube, Clock, Award, DollarSign, Users2, MessageCircle, Video, Film } from 'lucide-react';
 import VideoGallery from './components/VideoGallery';
 import VideoSlider from './components/VideoSlider';
 import HeroSection from './components/HeroSection';
 import emailjs from '@emailjs/browser';
-
+import AddVideo from './AddVideo'; // استيراد مكون AddVideo
 // تهيئة EmailJS
 emailjs.init("HLBCVhf1ZCFwFRH2T"); 
 
