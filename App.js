@@ -1,12 +1,13 @@
-import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import AddVideo from './AddVideo'; // تأكد من المسار الصحيح لملف AddVideo.js
+import Home from './Home'; // الصفحة الرئيسية
 
 function App() {
   return (
-    <Router basename="/">
+    <Router>
       <Routes>
-        <Route path="/admin/videos" element={<AddVideo />} />
-        <Route path="*" element={<Navigate to="/" />} />
+        <Route path="/" element={<Home />} />
+        <Route path="/addvideo" element={<AddVideo />} />
       </Routes>
     </Router>
   );
