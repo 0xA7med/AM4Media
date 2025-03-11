@@ -21,6 +21,30 @@ function App() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const videos = [
+   {
+      id: '1X0oD9KbArMOpp6d1Up7mUpWBGZKn6tQ5',
+      title: 'افضل خدمات صيانة السيارات',
+      description: 'فيديو ترويجي لخدمات صيانة السيارات لدي مركز غازي جميل',
+      categories: ['مونتاج','ترويجي', 'Reels'],
+      thumbnail: 'https://i.ibb.co/Qy3Lmqp/gazy-center-1.jpg',
+      aspectRatio: 'portrait'
+    },
+    {
+      id: '1Thcs7caBUTJoCiVJd5n4wmIEZKXdZEvf',
+      title: 'فيديو تشويقي لمعرض Leap ج4',
+      description: 'فيديو تشويقي لمعرض Leap التقني',
+      categories: ['مونتاج', 'ترويجي'],
+      thumbnail: 'https://i.ibb.co/KpFKjwVB/TRANS-Leap-4-4-mp4-snapshot-00-20-2025-02-05-04-04-59.jpg',
+      aspectRatio: 'square'
+    },
+    {
+      id: '1MB6HJb9CEYE9UsrJt4EB1GXl8VfRYMRu',
+      title: 'التراث الشعبي ',
+      description: 'فيديو تشويقي لمهرجان التراث الشعبي ',
+      categories: ['مونتاج', 'ترويجي'],
+      thumbnail: 'https://i.ibb.co/cS8c6Vb7/folk-games-60-mp4-snapshot-00-04-2025-02-05-03-58-28.jpg',
+      aspectRatio: 'square'
+    },
     {
       id: '1xCX8kP7uM3VSaktTd5wjjkfPZxTzoGli',
       title: 'استعراض سيارة Uni V ',
@@ -92,7 +116,16 @@ function App() {
       categories: ['Gif','مونتاج', 'ترويجي'],
       thumbnail: 'https://i.ibb.co/chS8vZ5b/uni-s-line-2-mp4-snapshot-00-20-2025-02-05-03-18-52.jpg',
       aspectRatio: 'square'
+    },
+    {
+      id: '17CMXiMFguBJHtbgmTFRyJ-SDwL4JapgA',
+      title: 'فيديو تشويقي لمعرض Leap ج2',
+      description: 'فيديو تشويقي لمعرض Leap التقني',
+      categories: ['مونتاج', 'ترويجي'],
+      thumbnail: 'https://i.ibb.co/mrGjCV8V/LEAP-2-mp4-snapshot-00-16-2025-02-05-03-51-26.jpg',
+      aspectRatio: 'square'
     }
+    
   ];
 
   const portfolioVideos = videos;
@@ -201,14 +234,18 @@ function App() {
           </div>
 
           {/* Mobile Menu */}
-          <div className={`md:hidden transition-all duration-300 ${isMenuOpen ? 'max-h-48 opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}>
-            <nav className="py-4 space-y-4">
-              <a href="#home" className="block text-gray-300 hover:text-white transition-colors">الرئيسية</a>
-              <a href="#services" className="block text-gray-300 hover:text-white transition-colors">خدماتنا</a>
-              <a href="#portfolio" className="block text-gray-300 hover:text-white transition-colors">أعمالنا</a>
-              <a href="#why-us" className="block text-gray-300 hover:text-white transition-colors">لماذا نحن؟</a>
-              <a href="#contact" className="block text-gray-300 hover:text-white transition-colors">اتصل بنا</a>
-            </nav>
+          <div className={`absolute top-full left-0 right-0 transform transition-all duration-300 ease-in-out ${isMenuOpen ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2 pointer-events-none'}`}>
+            <div className="bg-gray-900/95 backdrop-blur-md shadow-xl border-t border-gray-800">
+              <div className="container mx-auto py-4 px-6">
+                <nav className="space-y-4">
+                  <a href="#home" className="block py-3 px-4 text-gray-200 hover:bg-gray-800/50 rounded-lg transition-all duration-300 text-lg">الرئيسية</a>
+                  <a href="#services" className="block py-3 px-4 text-gray-200 hover:bg-gray-800/50 rounded-lg transition-all duration-300 text-lg">خدماتنا</a>
+                  <a href="#portfolio" className="block py-3 px-4 text-gray-200 hover:bg-gray-800/50 rounded-lg transition-all duration-300 text-lg">أعمالنا</a>
+                  <a href="#why-us" className="block py-3 px-4 text-gray-200 hover:bg-gray-800/50 rounded-lg transition-all duration-300 text-lg">لماذا نحن؟</a>
+                  <a href="#contact" className="block py-3 px-4 text-gray-200 hover:bg-gray-800/50 rounded-lg transition-all duration-300 text-lg">اتصل بنا</a>
+                </nav>
+              </div>
+            </div>
           </div>
         </div>
       </header>
