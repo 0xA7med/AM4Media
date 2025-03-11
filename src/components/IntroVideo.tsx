@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 interface IntroVideoProps {
   videoId: string;
 }
-
+// في ملف IntroVideo.tsx
 const IntroVideo: React.FC<IntroVideoProps> = ({ videoId }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -12,6 +12,7 @@ const IntroVideo: React.FC<IntroVideoProps> = ({ videoId }) => {
 
   const handleIframeLoad = () => {
     setLoading(false);
+    setError(false); // إعادة تعيين حالة الخطأ عند التحميل الناجح
   };
 
   const toggleMute = () => {
@@ -45,7 +46,7 @@ const IntroVideo: React.FC<IntroVideoProps> = ({ videoId }) => {
   }
 
   return (
-    <div className="intro-video-container relative w-full h-[100%] rounded-xl overflow-hidden shadow-lg">
+    <div className="intro-video-container relative w-full aspect-video rounded-xl overflow-hidden shadow-lg">
       {loading && (
         <div className="absolute inset-0 flex items-center justify-center bg-gray-800">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
@@ -54,7 +55,7 @@ const IntroVideo: React.FC<IntroVideoProps> = ({ videoId }) => {
       
       <iframe
         ref={iframeRef}
-        src={`https://drive.google.com/file/d/${videoId}/preview? 1 : 0}`}
+        src={`https://drive.google.com/file/d/${videoId}/preview?autoplay=1&mute=${isMuted ? 1 : 0}`}
         width="100%"
         height="100%"
         allow="autoplay"
@@ -83,7 +84,7 @@ const IntroVideo: React.FC<IntroVideoProps> = ({ videoId }) => {
         )}
       </button>
       
-      {error && (
+      {error && !loading && (
         <div className="absolute inset-0 flex items-center justify-center bg-gray-800 text-white">
           حدث خطأ أثناء تحميل الفيديو
         </div>
