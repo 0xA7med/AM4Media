@@ -2,19 +2,20 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Textarea } from "@/components/ui/textarea";
 
-const SECRET_PASSWORD = "353567"; // قم بتغيير كلمة المرور هنا
+const SECRET_PASSWORD = "353567"; // كلمة المرور
 
 export default function AddVideo() {
   const [password, setPassword] = useState("");
   const [authenticated, setAuthenticated] = useState(false);
-  const [videoUrl, setVideoUrl] = useState("");
   const [videoName, setVideoName] = useState("");
   const [videoDescription, setVideoDescription] = useState("");
   const [videoThumbnail, setVideoThumbnail] = useState("");
   const [videoAspectRatio, setVideoAspectRatio] = useState("square");
-  const [videos, setVideos] = useState([]);
-  const [editingIndex, setEditingIndex] = useState(null);
+  const [videoUrl, setVideoUrl] = useState("");
 
   const handleLogin = () => {
     if (password === SECRET_PASSWORD) {
@@ -29,7 +30,17 @@ export default function AddVideo() {
       alert("يرجى إدخال رابط الفيديو");
       return;
     }
-
+    
+    if (videoName.trim() === "") {
+      alert("يرجى إدخال اسم الفيديو");
+      return;
+    }
+    
+    if (videoThumbnail.trim() === "") {
+      alert("يرجى إدخال رابط الصورة المصغرة");
+      return;
+    }
+    
     const newVideo = {
       name: videoName,
       description: videoDescription,
@@ -37,38 +48,16 @@ export default function AddVideo() {
       aspectRatio: videoAspectRatio,
       url: videoUrl
     };
-
-    if (editingIndex !== null) {
-      const updatedVideos = [...videos];
-      updatedVideos[editingIndex] = newVideo;
-      setVideos(updatedVideos);
-      setEditingIndex(null);
-    } else {
-      setVideos([...videos, newVideo]);
-    }
-
-    alert(`تمت ${editingIndex !== null ? 'تعديل' : 'إضافة'} الفيديو: ${videoName}`);
-    setVideoUrl("");
+    
+    console.log("تمت إضافة الفيديو:", newVideo);
+    alert(`تمت إضافة الفيديو: ${videoName}`);
+    
+    // إعادة تعيين الحقول
     setVideoName("");
     setVideoDescription("");
     setVideoThumbnail("");
     setVideoAspectRatio("square");
-  };
-
-  const handleDeleteVideo = (index) => {
-    const updatedVideos = videos.filter((_, i) => i !== index);
-    setVideos(updatedVideos);
-    alert("تم حذف الفيديو بنجاح");
-  };
-
-  const handleEditVideo = (index) => {
-    const video = videos[index];
-    setVideoName(video.name);
-    setVideoDescription(video.description);
-    setVideoThumbnail(video.thumbnail);
-    setVideoAspectRatio(video.aspectRatio);
-    setVideoUrl(video.url);
-    setEditingIndex(index);
+    setVideoUrl("");
   };
 
   return (
@@ -91,59 +80,71 @@ export default function AddVideo() {
           ) : (
             <div className="space-y-4">
               <h2 className="text-xl font-semibold text-center">إضافة فيديو جديد</h2>
-              <Input
-                type="text"
-                placeholder="اسم الفيديو"
-                value={videoName}
-                onChange={(e) => setVideoName(e.target.value)}
-              />
-              <Input
-                type="text"
-                placeholder="وصف الفيديو"
-                value={videoDescription}
-                onChange={(e) => setVideoDescription(e.target.value)}
-              />
-              <Input
-                type="text"
-                placeholder="رابط الصورة المصغرة"
-                value={videoThumbnail}
-                onChange={(e) => setVideoThumbnail(e.target.value)}
-              />
-              <select
-                value={videoAspectRatio}
-                onChange={(e) => setVideoAspectRatio(e.target.value)}
-                className="w-full p-2 border rounded-md"
-              >
-                <option value="square">مربع</option>
-                <option value="portrait">طولى</option>
-              </select>
-              <Input
-                type="text"
-                placeholder="رابط الفيديو من جوجل درايف"
-                value={videoUrl}
-                onChange={(e) => setVideoUrl(e.target.value)}
-              />
-              <Button className="w-full" onClick={handleAddVideo}>
-                {editingIndex !== null ? 'تعديل الفيديو' : 'إضافة الفيديو'}
-              </Button>
-
-              <div className="space-y-4">
-                <h2 className="text-xl font-semibold text-center">قائمة الفيديوهات</h2>
-                {videos.map((video, index) => (
-                  <div key={index} className="p-4 border rounded-md">
-                    <h3 className="font-semibold">{video.name}</h3>
-                    <p>{video.description}</p>
-                    <div className="flex space-x-2 mt-2">
-                      <Button onClick={() => handleEditVideo(index)}>
-                        تعديل
-                      </Button>
-                      <Button variant="destructive" onClick={() => handleDeleteVideo(index)}>
-                        حذف
-                      </Button>
-                    </div>
-                  </div>
-                ))}
+              
+              <div className="space-y-2">
+                <Label htmlFor="videoName">اسم الفيديو</Label>
+                <Input
+                  id="videoName"
+                  type="text"
+                  placeholder="أدخل اسم الفيديو"
+                  value={videoName}
+                  onChange={(e) => setVideoName(e.target.value)}
+                />
               </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="videoDescription">وصف الفيديو</Label>
+                <Textarea
+                  id="videoDescription"
+                  placeholder="أدخل وصف الفيديو"
+                  value={videoDescription}
+                  onChange={(e) => setVideoDescription(e.target.value)}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="videoThumbnail">رابط الصورة المصغرة</Label>
+                <Input
+                  id="videoThumbnail"
+                  type="text"
+                  placeholder="أدخل رابط الصورة المصغرة"
+                  value={videoThumbnail}
+                  onChange={(e) => setVideoThumbnail(e.target.value)}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label>أبعاد الفيديو</Label>
+                <RadioGroup 
+                  value={videoAspectRatio} 
+                  onValueChange={setVideoAspectRatio}
+                  className="flex space-x-4 rtl:space-x-reverse"
+                >
+                  <div className="flex items-center space-x-2 rtl:space-x-reverse">
+                    <RadioGroupItem value="square" id="square" />
+                    <Label htmlFor="square">مربع</Label>
+                  </div>
+                  <div className="flex items-center space-x-2 rtl:space-x-reverse">
+                    <RadioGroupItem value="portrait" id="portrait" />
+                    <Label htmlFor="portrait">طولي</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="videoUrl">رابط الفيديو (جوجل درايف)</Label>
+                <Input
+                  id="videoUrl"
+                  type="text"
+                  placeholder="أدخل رابط الفيديو من جوجل درايف"
+                  value={videoUrl}
+                  onChange={(e) => setVideoUrl(e.target.value)}
+                />
+              </div>
+              
+              <Button className="w-full" onClick={handleAddVideo}>
+                إضافة الفيديو
+              </Button>
             </div>
           )}
         </CardContent>
