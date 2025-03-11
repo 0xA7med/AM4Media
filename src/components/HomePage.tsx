@@ -211,7 +211,7 @@ export default function HomePage() {
               {/* نمنح أفكارك حياة على الشاشة بإبداع يتخطى الحدود. نجمع بين الفن والتقنية لنقدم محتوى مرئياً يعبر عن هويتك ويصل إلى قلوب جمهورك */}
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
-                <a
+              <a
                   href="#contact"
                   className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-3 rounded-full text-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105"
                 >
