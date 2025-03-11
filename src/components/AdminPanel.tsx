@@ -87,7 +87,8 @@ export default function AdminPanel() {
       description: newVideo.description,
       thumbnail: thumbnail,
       categories: newVideo.categories.split(',').map(cat => cat.trim()),
-      aspectRatio: newVideo.aspectRatio
+      aspectRatio: newVideo.aspectRatio,
+      createdAt: new Date().toISOString()
     };
 
     addVideo(videoData);
@@ -220,6 +221,11 @@ export default function AdminPanel() {
       </div>
     );
   }
+
+  // ترتيب الفيديوهات من الأحدث إلى الأقدم
+  const sortedVideos = [...videos].sort((a, b) => {
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
 
   return (
     <div className="min-h-screen bg-gray-900 p-6" dir="rtl">
@@ -409,7 +415,7 @@ export default function AdminPanel() {
         <div className="bg-gray-800 rounded-lg p-6">
           <h2 className="text-xl font-bold text-white mb-4">الفيديوهات الحالية</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {videos.map((video, index) => (
+            {sortedVideos.map((video, index) => (
               <div
                 key={`${video.id}-${index}`}
                 draggable

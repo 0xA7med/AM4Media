@@ -14,10 +14,15 @@ export default function VideoGallery({ videos }: VideoGalleryProps) {
   // Get unique categories from all videos
   const categories = Array.from(new Set(videos.flatMap(video => video.categories)));
   
-  // Filter videos based on selected category
+  // ترتيب الفيديوهات من الأحدث إلى الأقدم
+  const sortedVideos = [...videos].sort((a, b) => {
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
+
+  // تصفية الفيديوهات بعد الترتيب
   const filteredVideos = selectedCategory
-    ? videos.filter(video => video.categories.includes(selectedCategory))
-    : videos;
+    ? sortedVideos.filter(video => video.categories.includes(selectedCategory))
+    : sortedVideos;
 
   // تحديد عدد الأعمدة حسب عرض الشاشة
   const breakpointColumnsObj = {

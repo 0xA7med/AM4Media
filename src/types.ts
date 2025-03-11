@@ -5,6 +5,7 @@ export interface Video {
   categories: string[];
   thumbnail: string;
   aspectRatio: 'portrait' | 'square';
+  createdAt: string; // إضافة حقل التاريخ
 }
 
 export interface IntroVideo {

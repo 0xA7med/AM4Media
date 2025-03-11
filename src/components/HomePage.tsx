@@ -96,6 +96,11 @@ export default function HomePage() {
     }
   ];
 
+  // ترتيب الفيديوهات من الأحدث إلى الأقدم
+  const sortedVideos = [...videos].sort((a, b) => {
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 text-gray-100" dir="rtl">
       {/* Header */}
@@ -218,7 +223,7 @@ export default function HomePage() {
       <section id="portfolio" className="py-20">
         <div className="container mx-auto px-4">
           <h2 className="text-4xl font-bold text-center mb-16 bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">أعمالنا</h2>
-          <VideoGallery videos={videos} />
+          <VideoGallery videos={sortedVideos} />
         </div>
       </section>
 
@@ -362,21 +367,21 @@ export default function HomePage() {
               </ul>
             </div>
             <div>
-              <h4 className="text-xl font-bold text-white mb-4">تواصل معنا</h4>
-              <div className="flex space-x-4 rtl:space-x-reverse">
-                <a href="#" className="text-gray-400 hover:text-white transition-colors">
-                  <Facebook className="w-6 h-6" />
-                </a>
-                <a href="#" className="text-gray-400 hover:text-white transition-colors">
-                  <Instagram className="w-6 h-6" />
-                </a>
-                <a href="#" className="text-gray-400 hover:text-white transition-colors">
-                  <Twitter className="w-6 h-6" />
-                </a>
-                <a href="#" className="text-gray-400 hover:text-white transition-colors">
-                  <Youtube className="w-6 h-6" />
-                </a>
-              </div>
+           <h4 className="text-xl font-bold text-white mb-4">تواصل معنا</h4>
+           <div className="flex space-x-4 rtl:space-x-reverse">
+             <a href="https://www.facebook.com/A7meed.Mo7ameed" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors">
+               <Facebook className="w-6 h-6" />
+             </a>
+             <a href="https://www.instagram.com/a7meed.mo7ameed/" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors">
+               <Instagram className="w-6 h-6" />
+             </a>
+             <a href="https://x.com/0xAhmeed" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors">
+               <Twitter className="w-6 h-6" />
+             </a>
+             <a href="https://www.youtube.com/c/A7meedMo7ameed?sub_confirmation=1" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors">
+               <Youtube className="w-6 h-6" />
+             </a>
+           </div>
             </div>
           </div>
           <div className="mt-8 pt-8 border-t border-gray-800 text-center text-gray-400">
