@@ -260,18 +260,6 @@ export default function AddVideo() {
     }
   };
 
-  useEffect(() => {
-    // تحميل الفيديوهات من localStorage عند بدء التشغيل
-    const savedVideos = localStorage.getItem("videos");
-    if (savedVideos) {
-      setVideos(JSON.parse(savedVideos));
-    }
-  }, []);
-
-  useEffect(() => {
-    // حفظ الفيديوهات في localStorage عند تغييرها
-    localStorage.setItem("videos", JSON.stringify(videos));
-  }, [videos]);
 
   if (!authenticated) {
     return (
