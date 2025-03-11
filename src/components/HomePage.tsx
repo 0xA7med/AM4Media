@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Camera, Play, Edit, Monitor, Facebook, Instagram, Twitter, Youtube, Clock, Award, DollarSign, Users2, MessageCircle, Upload, Mail } from 'lucide-react';import VideoGallery from './VideoGallery';
+import { Camera, Play, Edit, Monitor, Facebook, Instagram, Twitter, Youtube, Clock, Award, DollarSign, Users2, MessageCircle, Upload, Mail, Phone } from 'lucide-react';
+import VideoGallery from './VideoGallery';
 import VideoSlider from './VideoSlider';
 import IntroVideo from './IntroVideo';
 import { useVideos } from '../videoStore';
