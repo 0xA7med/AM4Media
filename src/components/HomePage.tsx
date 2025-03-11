@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Camera, Play, Edit, Monitor, Facebook, Instagram, Twitter, Youtube, Clock, Award, DollarSign, Users2, MessageCircle, Upload, Mail, Phone } from 'lucide-react';
+import { Camera, Play, Edit, Monitor, Facebook, Instagram, Twitter, Youtube, Clock, Award, DollarSign, Users2, MessageCircle, Mail, Phone } from 'lucide-react';
 import VideoGallery from './VideoGallery';
 import VideoSlider from './VideoSlider';
-import IntroVideo from './IntroVideo';
+import { IntroVideo } from './IntroVideo';
 import { useVideos } from '../videoStore';
 import emailjs from '@emailjs/browser';
-import { useRef, useState } from 'react';
 
 // Initialize EmailJS
 emailjs.init("HLBCVhf1ZCFwFRH2T");
@@ -25,7 +24,7 @@ export default function HomePage() {
   const [formError, setFormError] = useState(false);
   const [formErrors, setFormErrors] = useState<{[key: string]: string}>({});
   const { videos, introVideo } = useVideos();
-  const formRef = useRef<HTMLFormElement>(null);
+  const formRef = React.useRef<HTMLFormElement>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -229,16 +228,13 @@ export default function HomePage() {
                 </a>
               </div>
             </div>
-            {introVideo && (
-              <section className="py-12 bg-gradient-to-r from-gray-900 to-gray-800 overflow-hidden">
-                <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-                  <h2 className="text-3xl md:text-4xl text-center font-bold text-white mb-8">الفيديو الترويجي</h2>
-                  <div className="max-w-5xl mx-auto">
-                    <IntroVideo videoId={introVideo} />
-                  </div>
+            <section className="w-full max-w-7xl mx-auto px-4 py-12">
+              {introVideo?.url && (
+                <div className="w-full max-w-5xl mx-auto">
+                  <IntroVideo videoUrl={introVideo.url} className="shadow-lg" />
                 </div>
-              </section>
-            )}
+              )}
+            </section>
           </div>
         </div>
       </section>

@@ -1,5 +1,21 @@
 import { create } from 'zustand';
-import { Video, VideoStore, IntroVideo } from './types';
+import { Video, IntroVideo } from './types';
+
+interface VideoStore {
+  videos: Video[];
+  introVideo: IntroVideo | null;
+  categories: string[];
+  addVideo: (video: Video) => void;
+  updateVideo: (id: string, updatedVideo: Partial<Video>) => void;
+  deleteVideo: (id: string) => void;
+  reorderVideos: (newOrder: Video[]) => void;
+  loadVideos: () => void;
+  saveVideos: () => void;
+  setIntroVideo: (video: IntroVideo) => void;
+  setVideoAsIntro: (videoId: string) => void;
+  addCategory: (category: string) => void;
+  removeCategory: (category: string) => void;
+}
 
 const STORAGE_KEY = 'portfolio_videos';
 const INTRO_VIDEO_KEY = 'intro_video';
@@ -13,7 +29,7 @@ export const useVideos = create<VideoStore>((set, get) => ({
   addVideo: (video) => {
     set((state) => ({
       videos: [...state.videos, video],
-      categories: [...new Set([...state.categories, ...video.categories])]
+      categories: [...new Set([...state.categories, ...[video.category]])]
     }));
     get().saveVideos();
   },
@@ -70,7 +86,7 @@ export const useVideos = create<VideoStore>((set, get) => ({
   setVideoAsIntro: (videoId: string) => set(state => {
     const video = state.videos.find(v => v.id === videoId);
     if (video) {
-      return { introVideo: { id: video.id, url: video.driveUrl || '' } };
+      return { introVideo: { id: video.id, url: video.driveUrl || '', thumbnail: video.thumbnail } };
     }
     return state;
   }),

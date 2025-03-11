@@ -1,130 +1,113 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
+import { Spinner } from './Spinner';
 
 interface IntroVideoProps {
-  videoId: string;
+  videoUrl: string;
+  className?: string;
 }
 
-const IntroVideo: React.FC<IntroVideoProps> = ({ videoId }) => {
+export const IntroVideo: React.FC<IntroVideoProps> = ({ videoUrl, className }) => {
+  const iframeRef = useRef<HTMLIFrameElement>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
-  const iframeRef = useRef<HTMLIFrameElement>(null);
-  const [aspectRatio, setAspectRatio] = useState<'16:9' | '1:1' | '9:16'>('16:9');
+
+  const getEmbedUrl = (url: string) => {
+    if (url.includes('drive.google.com/file/d/')) {
+      const fileId = url.match(/\/d\/(.+?)\//)
+        ? url.match(/\/d\/(.+?)\//)![1]
+        : url.split('/d/')[1]?.split('/')[0];
+      
+      if (fileId) {
+        return `https://drive.google.com/file/d/${fileId}/preview`;
+      }
+    }
+    return url;
+  };
+
+  useEffect(() => {
+    setLoading(true);
+    setError(false);
+    
+    const timeout = setTimeout(() => {
+      if (loading) {
+        setError(true);
+        setLoading(false);
+      }
+    }, 10000);
+    
+    return () => clearTimeout(timeout);
+  }, [videoUrl]);
 
   const handleIframeLoad = () => {
     setLoading(false);
+  };
+
+  const handleRetry = () => {
+    setLoading(true);
     setError(false);
+    
+    if (iframeRef.current) {
+      iframeRef.current.src = getEmbedUrl(videoUrl);
+    }
   };
 
   const toggleMute = () => {
     setIsMuted(!isMuted);
     if (iframeRef.current && iframeRef.current.contentWindow) {
-      try {
-        const message = isMuted ? 'unmute' : 'mute';
-        iframeRef.current.contentWindow.postMessage(message, '*');
-      } catch (error) {
-        console.error('خطأ في التحكم بالصوت:', error);
-      }
+      const message = isMuted ? 'unmute' : 'mute';
+      iframeRef.current.contentWindow.postMessage(message, '*');
     }
   };
-
-  useEffect(() => {
-    const handleErrorState = () => {
-      if (iframeRef.current && !iframeRef.current.contentWindow) {
-        setError(true);
-        setLoading(false);
-      }
-    };
-
-    // تحديد نسبة الأبعاد بناءً على عرض الشاشة
-    const updateAspectRatio = () => {
-      const width = window.innerWidth;
-      if (width <= 640) {
-        setAspectRatio('9:16'); // للموبايل
-      } else if (width <= 1024) {
-        setAspectRatio('1:1'); // للتابلت
-      } else {
-        setAspectRatio('16:9'); // للديسكتوب
-      }
-    };
-
-    updateAspectRatio();
-    window.addEventListener('resize', updateAspectRatio);
-    
-    const timer = setTimeout(handleErrorState, 5000);
-    
-    return () => {
-      clearTimeout(timer);
-      window.removeEventListener('resize', updateAspectRatio);
-    };
-  }, []);
-
-  // حساب قيم CSS لنسبة الأبعاد
-  const getPaddingTop = () => {
-    switch (aspectRatio) {
-      case '16:9': return '56.25%'; // 9/16 * 100%
-      case '1:1': return '100%';
-      case '9:16': return '177.78%'; // 16/9 * 100%
-      default: return '56.25%';
-    }
-  };
-
-  if (!videoId) {
-    return null;
-  }
 
   return (
-    <div className="relative w-full max-w-6xl mx-auto rounded-xl overflow-hidden shadow-2xl">
-      <div style={{ paddingTop: getPaddingTop() }} className="relative">
+    <div className={`relative w-full overflow-hidden rounded-lg ${className}`}>
+      <div className="relative aspect-video w-full">
         {loading && (
-          <div className="absolute inset-0 flex items-center justify-center bg-gray-900">
-            <div className="w-16 h-16 border-t-4 border-blue-500 border-solid rounded-full animate-spin"></div>
+          <div className="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-800">
+            <Spinner />
           </div>
         )}
         
         {error ? (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-900 text-white">
-            <p className="mb-2">حدث خطأ أثناء تحميل الفيديو</p>
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-100 dark:bg-gray-800 p-4 text-center">
+            <p className="mb-4 text-red-500">فشل في تحميل الفيديو</p>
             <button 
-              onClick={() => { setLoading(true); setError(false); }}
-              className="px-4 py-2 bg-blue-600 rounded-lg hover:bg-blue-700 transition"
+              onClick={handleRetry}
+              className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
             >
               إعادة المحاولة
             </button>
           </div>
         ) : (
-          <>
-            <iframe
-              ref={iframeRef}
-              src={`https://drive.google.com/file/d/${videoId}/preview?autoplay=1${isMuted ? '&mute=1' : ''}`}
-              allow="autoplay; encrypted-media"
-              allowFullScreen
-              onLoad={handleIframeLoad}
-              className="absolute top-0 left-0 w-full h-full"
-            ></iframe>
-            
-            <button 
-              onClick={toggleMute}
-              className="absolute bottom-4 right-4 bg-black bg-opacity-60 rounded-full p-2 text-white hover:bg-opacity-80 transition z-10"
-            >
-              {isMuted ? (
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M11 5 6 9H2v6h4l5 4V5z"/>
-                  <line x1="23" y1="9" x2="17" y2="15"/>
-                  <line x1="17" y1="9" x2="23" y2="15"/>
-                </svg>
-              ) : (
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M11 5 6 9H2v6h4l5 4V5z"/>
-                  <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
-                </svg>
-              )}
-            </button>
-          </>
+          <iframe
+            ref={iframeRef}
+            src={getEmbedUrl(videoUrl)}
+            className="absolute inset-0 w-full h-full"
+            frameBorder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+            onLoad={handleIframeLoad}
+          ></iframe>
         )}
+        
+        <button
+          onClick={toggleMute}
+          className="absolute bottom-4 right-4 z-10 p-2 bg-black bg-opacity-50 rounded-full hover:bg-opacity-70 transition-all"
+          aria-label={isMuted ? "إلغاء كتم الصوت" : "كتم الصوت"}
+        >
+          {isMuted ? (
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
+            </svg>
+          ) : (
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+            </svg>
+          )}
+        </button>
       </div>
     </div>
   );
 };
-
-export default IntroVideo;
