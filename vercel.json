@@ -13,7 +13,7 @@
   ],
   "routes": [
     { "src": "/admin/videos", "dest": "/index.html" },
-    { "src": "/assets/(.*)", "headers": { "Content-Type": "text/javascript" } },
+    { "src": "/assets/(.*)\\.js", "headers": { "Content-Type": "text/javascript" } },
     { "src": "/assets/(.*)\\.css", "headers": { "Content-Type": "text/css" } },
     { "src": "/.*", "dest": "/index.html" }
   ]
