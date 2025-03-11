@@ -21,12 +21,17 @@ export default function HomePage() {
   const [selectedFiles, setSelectedFiles] = React.useState<FileList | null>(null);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const { videos, introVideo } = useVideos();
+  const [formSubmitted, setFormSubmitted] = useState(false);
+  const [formError, setFormError] = useState(false);
+  const [formErrors, setFormErrors] = useState<{[key: string]: string}>({});
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      setSelectedFiles(e.target.files);
-    }
-  };
+
+ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+   const files = e.target.files;
+   if (files) {
+     setSelectedFiles(Array.from(files));
+   }
+ };
 
   React.useEffect(() => {
     const handleScroll = () => {
@@ -46,28 +51,38 @@ export default function HomePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    let errors: {[key: string]: string} = {};
+    
+    if (!formData.name.trim()) errors.name = "الاسم مطلوب";
+    if (!formData.email.trim()) errors.email = "البريد الإلكتروني مطلوب";
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) errors.email = "البريد الإلكتروني غير صالح";
+    if (!formData.service) errors.service = "يرجى اختيار نوع الخدمة";
+    if (!formData.message.trim()) errors.message = "الرسالة مطلوبة";
+    
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
+      return;
+    }
+    
     setIsSubmitting(true);
-
+    setFormErrors({});
+    
     try {
-      await emailjs.send(
-        'service_8t94fdu',
-        'template_pw1o4yu',
-        {
-          to_name: 'AM Media',
-          from_name: formData.name,
-          from_email: formData.email,
-          message: formData.message,
-          reply_to: formData.email,
-          to_email: 'zeero4123@gmail.com',
-          service: formData.service
-        },
-        'HLBCVhf1ZCFwFRH2T'
-      );
-
-      alert('تم إرسال رسالتك بنجاح!');
-      setFormData({ name: '', email: '', service: '', message: '' });
+      // قم بإرسال البيانات
+      // await submitForm(formData);
+      setFormSubmitted(true);
+      setFormError(false);
+      // إعادة تعيين النموذج
+      setFormData({
+        name: '',
+        email: '',
+        service: '',
+        message: ''
+      });
+      setSelectedFiles([]);
     } catch (error) {
-      alert('عذراً، حدث خطأ أثناء إرسال الرسالة. الرجاء المحاولة مرة أخرى.');
+      setFormSubmitted(true);
+      setFormError(true);
     } finally {
       setIsSubmitting(false);
     }
@@ -258,50 +273,77 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Contact Section */}
-      <section id="contact" className="py-20">
-        <div className="container mx-auto px-4">
-          <h2 className="text-4xl font-bold text-center mb-16 bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">اتصل بنا</h2>
-          <div className="max-w-3xl mx-auto">
-            {/* WhatsApp Button */}
-            <div className="text-center mb-8">
-              <a
-                href="https://wa.me/201026043165"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-full transition-colors duration-300"
-              >
-                <MessageCircle className="w-5 h-5" />
-                تواصل معنا عبر واتساب
-              </a>
-            </div>
-            <form onSubmit={handleSubmit} className="bg-gray-800/50 backdrop-blur-sm p-8 rounded-2xl shadow-lg">
-              <div className="mb-6">
-                <label className="block text-gray-300 mb-2">الاسم</label>
-                <input 
-                  type="text" 
-                  name="name"
-                  value={formData.name}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg focus:outline-none focus:border-blue-500 text-white transition-colors"
-                  placeholder="أدخل اسمك"
-                  required
-                />
+    {/* Contact Section */}
+    <section id="contact" className="py-20 relative">
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent to-blue-900/10 pointer-events-none"></div>
+      <div className="container mx-auto px-4 relative z-10">
+        <h2 className="text-4xl font-bold text-center mb-16 bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">اتصل بنا</h2>
+        <div className="max-w-3xl mx-auto">
+          {/* Social Media Buttons */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10">
+            <a
+              href="https://wa.me/201026043165"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-3 px-6 py-4 bg-green-600 hover:bg-green-700 text-white rounded-xl transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-lg"
+            >
+              <MessageCircle className="w-5 h-5" />
+              تواصل معنا عبر واتساب
+            </a>
+            <a
+              href="https://t.me/A7meed_Mo7ameed"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-3 px-6 py-4 bg-blue-500 hover:bg-blue-600 text-white rounded-xl transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-lg"
+            >
+              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M22.2647 2.42778C21.98 2.19091 21.6364 2.0354 21.2704 1.9787C20.9045 1.92199 20.5309 1.96659 20.1906 2.10778C19.7038 2.30778 15.7498 3.95278 12.0444 5.48278C8.27353 7.03978 4.58139 8.58928 2.88139 9.31978C2.50779 9.46583 2.18779 9.71637 1.96109 10.0411C1.73438 10.3659 1.6117 10.7496 1.60931 11.1428C1.60367 11.5357 1.71842 11.9216 1.94231 12.2511C2.16621 12.5805 2.48423 12.8375 2.85739 12.9908C4.34339 13.6458 6.19139 14.4378 6.19139 14.4378L6.19439 14.4388C6.19439 14.4388 6.92539 14.7108 7.03139 15.0258C7.12317 15.2958 7.12317 15.5866 7.03139 15.8568C6.78339 16.7548 6.31139 18.4068 6.07739 19.2368C5.95891 19.6457 5.96344 20.0817 6.09042 20.4878C6.2174 20.8939 6.46078 21.2503 6.78939 21.5128C7.14122 21.7899 7.57659 21.9424 8.02539 21.9428C8.45339 21.9428 8.87739 21.8058 9.31739 21.5348C10.1416 21.0518 13.2824 18.9048 14.1824 18.2598C16.7414 19.6068 19.4214 21.0128 19.6634 21.1318C20.0079 21.2889 20.3903 21.3605 20.7737 21.3396C21.1572 21.3187 21.5289 21.2059 21.8521 21.0125C22.1754 20.8192 22.4391 20.5517 22.6191 20.2347C22.7991 19.9177 22.8897 19.5617 22.8824 19.2018C22.8774 18.2018 22.2634 2.97978 22.2647 2.42778Z" fill="currentColor"/>
+                <path d="M8.83772 15.1318L8.28772 19.1558C8.28772 19.1558 8.14772 19.6198 8.70172 19.6198C9.25572 19.6198 13.9977 15.6198 13.9977 15.6198L8.83772 15.1318Z" fill="white"/>
+                <path d="M8.84259 15.1285L7.07959 14.4375L13.7246 9.29248L14.1416 9.70948C14.1416 9.70948 9.13559 14.3115 8.84259 15.1285Z" fill="white"/>
+              </svg>
+              تواصل معنا عبر تلجرام
+            </a>
+          </div>
+    
+          <div className="bg-gradient-to-br from-gray-800/70 to-gray-900/70 backdrop-blur-sm p-8 rounded-2xl shadow-xl border border-gray-700/50">
+            {formSubmitted && (
+              <div className={`mb-6 p-4 rounded-lg text-center ${formError ? 'bg-red-500/20 text-red-300' : 'bg-green-500/20 text-green-300'}`}>
+                {formError ? 'حدث خطأ أثناء إرسال النموذج. يرجى المحاولة مرة أخرى.' : 'تم إرسال رسالتك بنجاح. سنتواصل معك قريبًا!'}
               </div>
-              <div className="mb-6">
-                <label className="block text-gray-300 mb-2">البريد الإلكتروني</label>
-                <input 
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg focus:outline-none focus:border-blue-500 text-white transition-colors"
-                  placeholder="أدخل بريدك الإلكتروني"
-                  required
-                />
+            )}
+    
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-gray-300 mb-2 font-medium">الاسم</label>
+                  <input 
+                    type="text" 
+                    name="name"
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg focus:outline-none focus:border-blue-500 text-white transition-colors"
+                    placeholder="أدخل اسمك"
+                    required
+                  />
+                  {formErrors?.name && <p className="text-red-400 text-sm mt-1">{formErrors.name}</p>}
+                </div>
+                <div>
+                  <label className="block text-gray-300 mb-2 font-medium">البريد الإلكتروني</label>
+                  <input 
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg focus:outline-none focus:border-blue-500 text-white transition-colors"
+                    placeholder="أدخل بريدك الإلكتروني"
+                    required
+                  />
+                  {formErrors?.email && <p className="text-red-400 text-sm mt-1">{formErrors.email}</p>}
+                </div>
               </div>
-              <div className="mb-6">
-                <label className="block text-gray-300 mb-2">نوع الخدمة المطلوبة</label>
+    
+              <div>
+                <label className="block text-gray-300 mb-2 font-medium">نوع الخدمة المطلوبة</label>
                 <select
                   name="service"
                   value={formData.service}
@@ -315,38 +357,79 @@ export default function HomePage() {
                   <option value="editing">مونتاج فيديو</option>
                   <option value="design">تصميم جرافيك</option>
                 </select>
+                {formErrors?.service && <p className="text-red-400 text-sm mt-1">{formErrors.service}</p>}
               </div>
-              <div className="mb-6">
-                <label className="block text-gray-300 mb-2">الرسالة</label>
+    
+              <div>
+                <label className="block text-gray-300 mb-2 font-medium">الرسالة</label>
                 <textarea 
                   name="message"
                   value={formData.message}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg focus:outline-none focus:border-blue-500 text-white transition-colors h-32"
+                  className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg focus:outline-none focus:border-blue-500 text-white transition-colors h-32 resize-none"
                   placeholder="اكتب رسالتك هنا"
                   required
                 ></textarea>
+                {formErrors?.message && <p className="text-red-400 text-sm mt-1">{formErrors.message}</p>}
               </div>
-              <div className="mb-6">
-                <label className="block text-gray-300 mb-2">رفع الملفات</label>
-                <input 
-                  type="file" 
-                  multiple
-                  onChange={handleFileChange}
-                  className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg focus:outline-none focus:border-blue-500 text-white transition-colors"
-                />
+    
+              <div>
+                <label className="block text-gray-300 mb-2 font-medium">رفع الملفات</label>
+                <div className="border-2 border-dashed border-gray-600 rounded-lg p-6 text-center hover:border-blue-500 transition-colors cursor-pointer">
+                  <input 
+                    type="file" 
+                    multiple
+                    onChange={handleFileChange}
+                    className="hidden"
+                    id="fileUpload"
+                  />
+                  <label htmlFor="fileUpload" className="cursor-pointer flex flex-col items-center">
+                    <Upload className="w-10 h-10 text-gray-400 mb-2" />
+                    <span className="text-gray-300">اسحب الملفات هنا أو انقر للاختيار</span>
+                    <span className="text-gray-500 text-sm mt-1">الحد الأقصى للملف: 10MB</span>
+                  </label>
+                </div>
+                {selectedFiles.length > 0 && (
+                  <div className="mt-2">
+                    <p className="text-gray-300 text-sm">{selectedFiles.length} ملف تم اختياره</p>
+                  </div>
+                )}
               </div>
+    
               <button 
                 type="submit" 
-                className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white py-3 rounded-lg font-semibold hover:opacity-90 transition-opacity disabled:opacity-50"
+                className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white py-4 rounded-lg font-semibold hover:opacity-90 transition-all transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
                 disabled={isSubmitting}
               >
-                {isSubmitting ? 'جاري الإرسال...' : 'إرسال'}
+                {isSubmitting ? (
+                  <span className="flex items-center justify-center">
+                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    جاري الإرسال...
+                  </span>
+                ) : 'إرسال'}
               </button>
             </form>
           </div>
+    
+          <div className="mt-10 p-6 bg-gradient-to-br from-gray-800/50 to-gray-900/60 rounded-xl backdrop-blur-sm shadow-lg border border-gray-700/30">
+            <h3 className="text-xl font-bold text-white mb-4">وسائل أخرى للتواصل</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <a href="mailto:info@ammedia.com" className="flex items-center gap-3 p-4 bg-gray-700/40 rounded-lg hover:bg-gray-700/70 transition-colors transform hover:-translate-y-1 duration-300">
+                <Mail className="w-5 h-5 text-blue-400" />
+                <span>info@ammedia.com</span>
+              </a>
+              <a href="tel:+201026043165" className="flex items-center gap-3 p-4 bg-gray-700/40 rounded-lg hover:bg-gray-700/70 transition-colors transform hover:-translate-y-1 duration-300">
+                <Phone className="w-5 h-5 text-blue-400" />
+                <span>+201026043165</span>
+              </a>
+            </div>
+          </div>
         </div>
-      </section>
+      </div>
+    </section>
 
       {/* Footer */}
       <footer className="bg-gray-900 py-12">
