@@ -17,6 +17,7 @@ const IntroVideo: React.FC<IntroVideoProps> = ({ videoId }) => {
     }
   };
 
+  
   return (
     <div className="relative w-full aspect-video rounded-xl overflow-hidden">
       <iframe
