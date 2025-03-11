@@ -229,14 +229,15 @@ export default function HomePage() {
                 </a>
               </div>
             </div>
-            {introVideo && introVideo.id && (
-              <div className="py-12">
-                <div className="container mx-auto">
-                  <div className="max-w-full mx-auto">
-                    <IntroVideo videoId={introVideo.id} />
+            {introVideo && (
+              <section className="py-12 bg-gradient-to-r from-gray-900 to-gray-800 overflow-hidden">
+                <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+                  <h2 className="text-3xl md:text-4xl text-center font-bold text-white mb-8">الفيديو الترويجي</h2>
+                  <div className="max-w-5xl mx-auto">
+                    <IntroVideo videoId={introVideo} />
                   </div>
                 </div>
-              </div>
+              </section>
             )}
           </div>
         </div>
@@ -419,7 +420,7 @@ export default function HomePage() {
                 {formErrors?.message && <p className="text-red-400 text-sm mt-1">{formErrors.message}</p>}
               </div>
     
-              <div>
+              {/* <div>
                 <label className="block text-gray-300 mb-2 font-medium">رفع الملفات</label>
                 <div className="border-2 border-dashed border-gray-600 rounded-lg p-6 text-center hover:border-blue-500 transition-colors cursor-pointer">
                   <input 
@@ -440,7 +441,7 @@ export default function HomePage() {
                     <p className="text-gray-300 text-sm">{selectedFiles.length} ملف تم اختياره</p>
                   </div>
                 )}
-              </div>
+              </div> */}
     
               <button 
                 type="submit" 

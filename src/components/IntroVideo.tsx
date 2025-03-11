@@ -1,18 +1,19 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 
 interface IntroVideoProps {
   videoId: string;
 }
-// في ملف IntroVideo.tsx
+
 const IntroVideo: React.FC<IntroVideoProps> = ({ videoId }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const [aspectRatio, setAspectRatio] = useState<'16:9' | '1:1' | '9:16'>('16:9');
 
   const handleIframeLoad = () => {
     setLoading(false);
-    setError(false); // إعادة تعيين حالة الخطأ عند التحميل الناجح
+    setError(false);
   };
 
   const toggleMute = () => {
@@ -28,67 +29,100 @@ const IntroVideo: React.FC<IntroVideoProps> = ({ videoId }) => {
   };
 
   useEffect(() => {
-    setLoading(true);
-    setError(false);
-
-    const timeoutId = setTimeout(() => {
-      if (loading) {
+    const handleErrorState = () => {
+      if (iframeRef.current && !iframeRef.current.contentWindow) {
         setError(true);
         setLoading(false);
       }
-    }, 10000); // 10 ثواني كحد أقصى للتحميل
+    };
 
-    return () => clearTimeout(timeoutId);
-  }, [videoId]);
+    // تحديد نسبة الأبعاد بناءً على عرض الشاشة
+    const updateAspectRatio = () => {
+      const width = window.innerWidth;
+      if (width <= 640) {
+        setAspectRatio('9:16'); // للموبايل
+      } else if (width <= 1024) {
+        setAspectRatio('1:1'); // للتابلت
+      } else {
+        setAspectRatio('16:9'); // للديسكتوب
+      }
+    };
+
+    updateAspectRatio();
+    window.addEventListener('resize', updateAspectRatio);
+    
+    const timer = setTimeout(handleErrorState, 5000);
+    
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('resize', updateAspectRatio);
+    };
+  }, []);
+
+  // حساب قيم CSS لنسبة الأبعاد
+  const getPaddingTop = () => {
+    switch (aspectRatio) {
+      case '16:9': return '56.25%'; // 9/16 * 100%
+      case '1:1': return '100%';
+      case '9:16': return '177.78%'; // 16/9 * 100%
+      default: return '56.25%';
+    }
+  };
 
   if (!videoId) {
     return null;
   }
 
   return (
-    <div className="intro-video-container relative w-full aspect-video rounded-xl overflow-hidden shadow-lg">
-      {loading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-gray-800">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-        </div>
-      )}
-      
-      <iframe
-        ref={iframeRef}
-        src={`https://drive.google.com/file/d/${videoId}/preview?autoplay=1&mute=${isMuted ? 1 : 0}`}
-        width="100%"
-        height="100%"
-        allow="autoplay"
-        onLoad={handleIframeLoad}
-        className={`w-full h-full ${loading ? 'opacity-0' : 'opacity-100'}`}
-        onError={() => {
-          setError(true);
-          setLoading(false);
-        }}
-      />
-      
-      <button
-        onClick={toggleMute}
-        className="absolute bottom-4 right-4 p-3 bg-black/50 rounded-full hover:bg-black/70 transition-colors"
-        aria-label={isMuted ? "تشغيل الصوت" : "كتم الصوت"}
-      >
-        {isMuted ? (
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
-          </svg>
-        ) : (
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
-          </svg>
+    <div className="relative w-full max-w-6xl mx-auto rounded-xl overflow-hidden shadow-2xl">
+      <div style={{ paddingTop: getPaddingTop() }} className="relative">
+        {loading && (
+          <div className="absolute inset-0 flex items-center justify-center bg-gray-900">
+            <div className="w-16 h-16 border-t-4 border-blue-500 border-solid rounded-full animate-spin"></div>
+          </div>
         )}
-      </button>
-      
-      {error && !loading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-gray-800 text-white">
-          حدث خطأ أثناء تحميل الفيديو
-        </div>
-      )}
+        
+        {error ? (
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-900 text-white">
+            <p className="mb-2">حدث خطأ أثناء تحميل الفيديو</p>
+            <button 
+              onClick={() => { setLoading(true); setError(false); }}
+              className="px-4 py-2 bg-blue-600 rounded-lg hover:bg-blue-700 transition"
+            >
+              إعادة المحاولة
+            </button>
+          </div>
+        ) : (
+          <>
+            <iframe
+              ref={iframeRef}
+              src={`https://drive.google.com/file/d/${videoId}/preview?autoplay=1${isMuted ? '&mute=1' : ''}`}
+              allow="autoplay; encrypted-media"
+              allowFullScreen
+              onLoad={handleIframeLoad}
+              className="absolute top-0 left-0 w-full h-full"
+            ></iframe>
+            
+            <button 
+              onClick={toggleMute}
+              className="absolute bottom-4 right-4 bg-black bg-opacity-60 rounded-full p-2 text-white hover:bg-opacity-80 transition z-10"
+            >
+              {isMuted ? (
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M11 5 6 9H2v6h4l5 4V5z"/>
+                  <line x1="23" y1="9" x2="17" y2="15"/>
+                  <line x1="17" y1="9" x2="23" y2="15"/>
+                </svg>
+              ) : (
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M11 5 6 9H2v6h4l5 4V5z"/>
+                  <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
+                </svg>
+              )}
+            </button>
+          </>
+        )}
+      </div>
     </div>
   );
 };
