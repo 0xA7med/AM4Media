@@ -5,7 +5,7 @@ interface IntroVideoProps {
   videoId: string;
 }
 
-export default function IntroVideo({ videoId }: IntroVideoProps) {
+const IntroVideo: React.FC<IntroVideoProps> = ({ videoId }) => {
   const [isMuted, setIsMuted] = useState(true);
   const videoRef = useRef<HTMLIFrameElement>(null);
 
@@ -40,4 +40,6 @@ export default function IntroVideo({ videoId }: IntroVideoProps) {
       </button>
     </div>
   );
-}
+};
+
+export default IntroVideo;
