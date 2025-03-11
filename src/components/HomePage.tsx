@@ -18,7 +18,7 @@ export default function HomePage() {
     service: '',
     message: ''
   });
-  const [selectedFiles, setSelectedFiles] = React.useState<FileList | null>(null);
+  const [selectedFiles, setSelectedFiles] = React.useState<File[] | null>(null);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const { videos, introVideo } = useVideos();
   const [formSubmitted, setFormSubmitted] = useState(false);
@@ -26,12 +26,12 @@ export default function HomePage() {
   const [formErrors, setFormErrors] = useState<{[key: string]: string}>({});
 
 
- const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-   const files = e.target.files;
-   if (files) {
-     setSelectedFiles(Array.from(files));
-   }
- };
+const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const files = e.target.files;
+  if (files) {
+    setSelectedFiles(Array.from(files));
+  }
+};
 
   React.useEffect(() => {
     const handleScroll = () => {
@@ -389,7 +389,7 @@ export default function HomePage() {
                     <span className="text-gray-500 text-sm mt-1">الحد الأقصى للملف: 10MB</span>
                   </label>
                 </div>
-                {selectedFiles.length > 0 && (
+                {selectedFiles && selectedFiles.length > 0 && (
                   <div className="mt-2">
                     <p className="text-gray-300 text-sm">{selectedFiles.length} ملف تم اختياره</p>
                   </div>
