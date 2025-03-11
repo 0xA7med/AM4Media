@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, SyntheticEvent } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface IntroVideoProps {
   videoId: string;
@@ -11,91 +11,18 @@ export default function IntroVideo({ videoId }: IntroVideoProps) {
   const [isMuted, setIsMuted] = useState(true);
 
   useEffect(() => {
+    // تأكد من وجود معرف الفيديو
     if (!videoId) {
       setError("لم يتم تحديد معرف الفيديو");
       setIsLoading(false);
       return;
     }
 
+    // إعادة ضبط حالة التحميل عند تغيير معرف الفيديو
     setIsLoading(true);
     setError(null);
     
-    const timeoutId = setTimeout(() => {
-      if (isLoading) {
-        setError("استغرق تحميل الفيديو وقتًا طويلاً، يرجى التحقق من اتصالك بالإنترنت");
-        setIsLoading(false);
-      }
-    }, 15000);
     
-    return () => clearTimeout(timeoutId);
-  }, [videoId, isLoading]);
-
-  const handleIframeLoad = () => {
-    setIsLoading(false);
-  };
-
-  const handleIframeError = () => {
-    setIsLoading(false);
-    setError("حدث خطأ أثناء تحميل الفيديو");
-  };
-
-  const toggleMute = () => {
-    setIsMuted(!isMuted);
-    if (iframeRef.current && iframeRef.current.contentWindow) {
-      try {
-        const message = isMuted ? 'unmute' : 'mute';
-        iframeRef.current.contentWindow.postMessage(message, '*');
-      } catch (error) {
-        console.error('خطأ في التحكم بالصوت:', error);
-      }
-    }
-  };
-
-  const retryLoading = () => {
-    setIsLoading(true);
-    setError(null);
-    if (iframeRef.current) {
-      const src = iframeRef.current.src;
-      iframeRef.current.src = '';
-      setTimeout(() => {
-        if (iframeRef.current) iframeRef.current.src = src;
-      }, 100);
-    }
-  };
-
-  if (!videoId && !isLoading && !error) {
-    return (
-      <div className="w-full h-screen flex items-center justify-center bg-gray-900">
-        <p className="text-white text-xl">لم يتم تعيين فيديو تعريفي</p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="relative w-full aspect-square rounded-xl overflow-hidden">
-      {isLoading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-70 z-10">
-          <div className="flex flex-col items-center">
-            <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-primary mb-4"></div>
-            <p className="text-white text-lg">جاري تحميل الفيديو...</p>
-          </div>
-        </div>
-      )}
-      
-      {error && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-70 z-10">
-          <div className="bg-white p-6 rounded-md shadow-lg max-w-md text-center">
-            <p className="text-red-500 mb-4 text-lg">{error}</p>
-            <button 
-              className="px-4 py-2 bg-primary text-white rounded-md hover:bg-blue-600 transition"
-              onClick={retryLoading}
-            >
-              إعادة المحاولة
-            </button>
-          </div>
-        </div>
-      )}
-      
       <iframe
         ref={iframeRef}
         src={`https://drive.google.com/file/d/${videoId}/preview?`}
@@ -106,7 +33,7 @@ export default function IntroVideo({ videoId }: IntroVideoProps) {
         onError={handleIframeError}
       ></iframe>
       
-      <div className="absolute bottom-4 right-4 z-10">
+      <div className="absolute bottom-10 right-10 z-10">
         <button
           onClick={toggleMute}
           className="p-3 bg-black bg-opacity-50 rounded-full hover:bg-opacity-70 transition-all"
@@ -126,4 +53,8 @@ export default function IntroVideo({ videoId }: IntroVideoProps) {
       </div>
     </div>
   );
+}
+
+function handleIframeLoad(event: SyntheticEvent<HTMLIFrameElement, Event>): void {
+  throw new Error("Function not implemented.");
 }

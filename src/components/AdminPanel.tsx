@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useVideos } from '../videoStore';
-import { Video } from '../types';
-import { Download, Trash2, Edit, Plus, Save, Upload, X, GripVertical, Play } from 'lucide-react';
+import { Video, IntroVideo } from '../types';
+import { Download, Trash2, Edit, Plus, Save, Upload, X, GripVertical } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const ADMIN_PASSWORD = '353567';
@@ -24,7 +24,8 @@ export default function AdminPanel() {
     driveUrl: '',
     thumbnail: '',
     categories: '',
-    aspectRatio: 'square' as 'square' | 'portrait'
+    aspectRatio: 'square' as 'square' | 'portrait',
+    url: ''
   });
 
   const [introVideoUrl, setIntroVideoUrl] = useState('');
@@ -88,6 +89,8 @@ export default function AdminPanel() {
       thumbnail: thumbnail,
       categories: newVideo.categories.split(',').map(cat => cat.trim()),
       aspectRatio: newVideo.aspectRatio,
+      driveUrl: newVideo.driveUrl, // التأكد من وجود driveUrl
+      url: newVideo.url, // إضافة هذا الحقل
       createdAt: new Date().toISOString()
     };
 
@@ -98,7 +101,8 @@ export default function AdminPanel() {
       driveUrl: '',
       thumbnail: '',
       categories: '',
-      aspectRatio: 'square'
+      aspectRatio: 'square',
+      url: ''
     });
     setCustomThumbnailUrl('');
     setThumbnailFile(null);
@@ -190,13 +194,18 @@ export default function AdminPanel() {
       return;
     }
 
-    setIntroVideo({
-      id: videoId,
-      url: introVideoUrl,
-      thumbnail: `https://drive.google.com/thumbnail?id=${videoId}&sz=w1000`
-    });
-    toast.success('تم تعيين الفيديو التعريفي بنجاح');
-    setIntroVideoUrl('');
+    const selectedVideo = videos.find(v => v.id === videoId);
+    if (selectedVideo) {
+      const introVideo: IntroVideo = {
+        id: selectedVideo.id,
+        url: selectedVideo.url,
+        thumbnail: `https://drive.google.com/thumbnail?id=${selectedVideo.id}&sz=w1000`
+      };
+      setIntroVideo(introVideo);
+      toast.success('تم تعيين الفيديو التعريفي بنجاح');
+    } else {
+      toast.error('لم يتم العثور على الفيديو');
+    }
   };
 
   if (!isAuthenticated) {
@@ -222,10 +231,11 @@ export default function AdminPanel() {
     );
   }
 
-  // ترتيب الفيديوهات من الأحدث إلى الأقدم
-  const sortedVideos = [...videos].sort((a, b) => {
-    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-  });
+  const sortedVideos = useMemo(() => {
+    return [...videos].sort((a, b) => {
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
+  }, [videos]);
 
   return (
     <div className="min-h-screen bg-gray-900 p-6" dir="rtl">
@@ -298,6 +308,14 @@ export default function AdminPanel() {
                 value={newVideo.driveUrl}
                 onChange={(e) => setNewVideo({ ...newVideo, driveUrl: e.target.value })}
                 placeholder="رابط Google Drive"
+                className="px-4 py-2 rounded bg-gray-700 text-white"
+                required
+              />
+              <input
+                type="text"
+                value={newVideo.url}
+                onChange={(e) => setNewVideo({ ...newVideo, url: e.target.value })}
+                placeholder="رابط الفيديو"
                 className="px-4 py-2 rounded bg-gray-700 text-white"
                 required
               />
@@ -435,27 +453,12 @@ export default function AdminPanel() {
                 />
                 {editingVideo?.id === video.id ? (
                   <form onSubmit={handleUpdate} className="p-4 space-y-4">
-                    <div className="mb-4">
-                      <label className="block text-gray-700 dark:text-gray-300 mb-2">عنوان الفيديو</label>
-                      <div className="flex">
-                        <input
-                          type="text"
-                          className="w-full p-2 border rounded dark:bg-gray-700 dark:text-white dark:border-gray-600"
-                          value={editingVideo.title}
-                          onChange={(e) => setEditingVideo({...editingVideo, title: e.target.value})}
-                        />
-                        <button
-                          type="button"
-                          className="ml-2 px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
-                          onClick={async () => {
-                            const text = await navigator.clipboard.readText();
-                            setEditingVideo({...editingVideo, title: text});
-                          }}
-                        >
-                          لصق
-                        </button>
-                      </div>
-                    </div>
+                    <input
+                      type="text"
+                      value={editingVideo.title}
+                      onChange={(e) => setEditingVideo({ ...editingVideo, title: e.target.value })}
+                      className="w-full px-4 py-2 rounded bg-gray-600 text-white"
+                    />
                     <textarea
                       value={editingVideo.description}
                       onChange={(e) => setEditingVideo({ ...editingVideo, description: e.target.value })}
@@ -485,21 +488,24 @@ export default function AdminPanel() {
                         ))}
                       </div>
                     </div>
-                    <div className="mb-4">
-                      <label className="block text-gray-700 dark:text-gray-300 mb-2">رابط الفيديو</label>
-                      <div className="flex">
+                    <div className="mb-3">
+                      <label>رابط الفيديو</label>
+                      <div className="flex gap-2">
                         <input
                           type="text"
-                          className="w-full p-2 border rounded dark:bg-gray-700 dark:text-white dark:border-gray-600"
-                          value={editingVideo.driveUrl}
-                          onChange={(e) => setEditingVideo({...editingVideo, driveUrl: e.target.value})}
+                          value={editingVideo?.driveUrl || ''}
+                          onChange={(e) => {
+                            if (editingVideo) {
+                              setEditingVideo({...editingVideo, driveUrl: e.target.value});
+                            }
+                          }}
                         />
                         <button
-                          type="button"
-                          className="ml-2 px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
                           onClick={async () => {
                             const text = await navigator.clipboard.readText();
-                            setEditingVideo({...editingVideo, driveUrl: text});
+                            if (editingVideo) {
+                              setEditingVideo({...editingVideo, driveUrl: text});
+                            }
                           }}
                         >
                           لصق
@@ -558,17 +564,45 @@ export default function AdminPanel() {
                       >
                         <Trash2 size={20} />
                       </button>
-                      <button
-                        onClick={() => setIntroVideo(video.id)}
-                        className="p-2 text-purple-400 hover:text-purple-300 transition-colors"
+                      <button 
+                        onClick={() => {
+                          const selectedVideo = videos.find(v => v.id === video.id);
+                          if (selectedVideo) setIntroVideo(selectedVideo);
+                        }}
+                        className="p-2 text-blue-500 hover:text-blue-700"
                       >
-                        <Play size={20} />
+                        تعيين كفيديو تعريفي
                       </button>
                     </div>
                   </div>
                 )}
               </div>
             ))}
+          </div>
+        </div>
+
+        <div className="mb-6 p-4 border rounded bg-white">
+          <h3>الفيديو التعريفي</h3>
+          <div className="flex gap-2 items-end">
+            <input
+              type="text"
+              value={introVideoUrl}
+              onChange={(e) => setIntroVideoUrl(e.target.value)}
+              placeholder="معرف الفيديو"
+            />
+            <button
+              onClick={async () => {
+                const text = await navigator.clipboard.readText();
+                setIntroVideoUrl(text);
+              }}
+            >
+              لصق
+            </button>
+            <button
+              onClick={handleSetIntroVideo}
+            >
+              تعيين
+            </button>
           </div>
         </div>
       </div>

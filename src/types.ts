@@ -2,6 +2,8 @@ export interface Video {
   id: string;
   title: string;
   description: string;
+  driveUrl: string; // إضافة هذا الحقل
+  url: string; // إضافة هذا الحقل
   categories: string[];
   thumbnail: string;
   aspectRatio: 'portrait' | 'square';
@@ -12,7 +14,7 @@ export interface Video {
 
 export interface IntroVideo {
   id: string;
-  url: string;
+  url: string; // إضافة هذا الحقل
   thumbnail: string;
 }
 

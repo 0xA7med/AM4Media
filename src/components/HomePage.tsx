@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Camera, Play, Edit, Monitor, Facebook, Instagram, Twitter, Youtube, Clock, Award, DollarSign, Users2, MessageCircle, Upload, Mail, Phone } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Camera, Play, Edit, Monitor, Facebook, Instagram, Twitter, Youtube, Clock, Award, DollarSign, Users2, MessageCircle, Mail, Phone } from 'lucide-react';
 import VideoGallery from './VideoGallery';
 import VideoSlider from './VideoSlider';
 import IntroVideo from './IntroVideo';
@@ -25,13 +25,18 @@ export default function HomePage() {
   const [formError, setFormError] = useState(false);
   const [formErrors, setFormErrors] = useState<{[key: string]: string}>({});
 
+  const sortedVideos = useMemo(() => {
+    return [...videos].sort((a, b) => {
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
+  }, [videos]);
 
-const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  const files = e.target.files;
-  if (files) {
-    setSelectedFiles(Array.from(files));
-  }
-};
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files) {
+      setSelectedFiles(Array.from(files));
+    }
+  };
 
   React.useEffect(() => {
     const handleScroll = () => {
@@ -110,11 +115,6 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       description: "تصاميم مبتكرة تعزز هويتك البصرية"
     }
   ];
-
-  // ترتيب الفيديوهات من الأحدث إلى الأقدم
-  const sortedVideos = [...videos].sort((a, b) => {
-    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-  });
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 text-gray-100" dir="rtl">
