@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useVideos } from '../videoStore';
 import { Video } from '../types';
-import { Download, Trash2, Edit, Plus, Save, Upload, X, GripVertical } from 'lucide-react';
+import { Download, Trash2, Edit, Plus, Save, Upload, X, GripVertical, Star } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const ADMIN_PASSWORD = '353567';
@@ -11,7 +11,7 @@ export default function AdminPanel() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
   const [editingVideo, setEditingVideo] = useState<Video | null>(null);
-  const { videos, addVideo, updateVideo, deleteVideo, saveVideos, categories, addCategory, setIntroVideo, reorderVideos } = useVideos();
+  const { videos, addVideo, updateVideo, deleteVideo, saveVideos, categories, addCategory, setIntroVideo, reorderVideos, setVideoAsIntro } = useVideos();
   const navigate = useNavigate();
   const [thumbnailType, setThumbnailType] = useState<'drive' | 'url' | 'upload'>('drive');
   const [customThumbnailUrl, setCustomThumbnailUrl] = useState('');
@@ -197,6 +197,11 @@ export default function AdminPanel() {
     });
     toast.success('تم تعيين الفيديو التعريفي بنجاح');
     setIntroVideoUrl('');
+  };
+
+  const handleSetAsIntro = (videoId: string) => {
+    setVideoAsIntro(videoId);
+    toast.success('تم تعيين الفيديو كفيديو تعريفي بنجاح');
   };
 
   if (!isAuthenticated) {
@@ -515,6 +520,12 @@ export default function AdminPanel() {
                         className="p-2 text-blue-400 hover:text-blue-300 transition-colors"
                       >
                         <Edit size={20} />
+                      </button>
+                      <button
+                        onClick={() => handleSetAsIntro(video.id)}
+                        className="p-2 text-yellow-400 hover:text-yellow-300 transition-colors"
+                      >
+                        <Star size={20} />
                       </button>
                       <button
                         onClick={() => handleDelete(video.id)}

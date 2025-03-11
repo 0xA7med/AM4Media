@@ -67,6 +67,14 @@ export const useVideos = create<VideoStore>((set, get) => ({
     localStorage.setItem(INTRO_VIDEO_KEY, JSON.stringify(video));
   },
 
+  setVideoAsIntro: (videoId: string) => set(state => {
+    const video = state.videos.find(v => v.id === videoId);
+    if (video) {
+      return { introVideo: { id: video.id, url: video.driveUrl || '' } };
+    }
+    return state;
+  }),
+
   addCategory: (category) => {
     set((state) => ({
       categories: [...new Set([...state.categories, category])]

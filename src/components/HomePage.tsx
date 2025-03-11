@@ -5,6 +5,7 @@ import VideoSlider from './VideoSlider';
 import IntroVideo from './IntroVideo';
 import { useVideos } from '../videoStore';
 import emailjs from '@emailjs/browser';
+import { useRef, useState } from 'react';
 
 // Initialize EmailJS
 emailjs.init("HLBCVhf1ZCFwFRH2T");
@@ -19,19 +20,19 @@ export default function HomePage() {
     message: ''
   });
   const [selectedFiles, setSelectedFiles] = React.useState<File[] | null>(null);
-  const [isSubmitting, setIsSubmitting] = React.useState(false);
-  const { videos, introVideo } = useVideos();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [formError, setFormError] = useState(false);
   const [formErrors, setFormErrors] = useState<{[key: string]: string}>({});
+  const { videos, introVideo } = useVideos();
+  const formRef = useRef<HTMLFormElement>(null);
 
-
-const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  const files = e.target.files;
-  if (files) {
-    setSelectedFiles(Array.from(files));
-  }
-};
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files) {
+      setSelectedFiles(Array.from(files));
+    }
+  };
 
   React.useEffect(() => {
     const handleScroll = () => {
@@ -51,14 +52,8 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    let errors: {[key: string]: string} = {};
     
-    if (!formData.name.trim()) errors.name = "الاسم مطلوب";
-    if (!formData.email.trim()) errors.email = "البريد الإلكتروني مطلوب";
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) errors.email = "البريد الإلكتروني غير صالح";
-    if (!formData.service) errors.service = "يرجى اختيار نوع الخدمة";
-    if (!formData.message.trim()) errors.message = "الرسالة مطلوبة";
-    
+    const errors = validateForm();
     if (Object.keys(errors).length > 0) {
       setFormErrors(errors);
       return;
@@ -68,24 +63,57 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormErrors({});
     
     try {
-      // قم بإرسال البيانات
-      // await submitForm(formData);
-      setFormSubmitted(true);
-      setFormError(false);
-      // إعادة تعيين النموذج
-      setFormData({
-        name: '',
-        email: '',
-        service: '',
-        message: ''
-      });
-      setSelectedFiles([]);
+      const result = await emailjs.sendForm(
+        'service_8t94fdu',
+        'template_pw1o4yu',
+        formRef.current!,
+        'HLBCVhf1ZCFwFRH2T'
+      );
+      
+      if (result.text === 'OK') {
+        setFormSubmitted(true);
+        setFormError(false);
+        setFormData({
+          name: '',
+          email: '',
+          service: '',
+          message: ''
+        });
+        setSelectedFiles([]);
+      } else {
+        throw new Error('فشل إرسال النموذج');
+      }
     } catch (error) {
+      console.error('خطأ في إرسال النموذج:', error);
       setFormSubmitted(true);
       setFormError(true);
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const validateForm = () => {
+    const errors: {[key: string]: string} = {};
+    
+    if (!formData.name.trim()) {
+      errors.name = 'الاسم مطلوب';
+    }
+    
+    if (!formData.email.trim()) {
+      errors.email = 'البريد الإلكتروني مطلوب';
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      errors.email = 'الرجاء إدخال بريد إلكتروني صحيح';
+    }
+    
+    if (!formData.service) {
+      errors.service = 'الرجاء اختيار نوع الخدمة';
+    }
+    
+    if (!formData.message.trim()) {
+      errors.message = 'الرسالة مطلوبة';
+    }
+    
+    return errors;
   };
 
   const services = [
@@ -192,11 +220,16 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                 </a>
               </div>
             </div>
-            {introVideo?.id && (
-              <div className="flex-1 max-w-xl">
-                <IntroVideo videoId={introVideo?.id || ""} />
+            {introVideo && introVideo.id ? (
+              <div className="intro-video-section py-12">
+                <div className="container mx-auto">
+                  <h2 className="text-3xl font-bold text-center mb-8">الفيديو التعريفي</h2>
+                  <div className="max-w-4xl mx-auto">
+                    <IntroVideo videoId={introVideo.id} />
+                  </div>
+                </div>
               </div>
-            )}
+            ) : null}
           </div>
         </div>
       </section>
@@ -317,7 +350,7 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
               </div>
             )}
     
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} ref={formRef} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-gray-300 mb-2 font-medium">الاسم</label>
