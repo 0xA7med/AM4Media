@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { videos as appVideos } from './App';
-import { Card, CardContent } from "./components/ui/card";
-import { Button } from "./components/ui/button";
-import { Copy, Check, Eye, X, Plus, Trash, Edit2, ArrowLeft } from 'lucide-react';
+
+// استيراد الأيقونات
+// يمكنك إزالة هذا السطر إذا كانت مكتبة lucide-react غير متوفرة
+// import { Copy, Check, Eye, X, Plus, Trash, Edit2, ArrowLeft } from 'lucide-react';
 
 // دالة لاستخراج معرف الفيديو من رابط جوجل درايف
 function extractGoogleDriveId(url) {
@@ -55,6 +56,30 @@ const Select = ({ value, onChange, options, className, ...props }) => (
   </select>
 );
 
+// مكونات UI بسيطة بدلاً من استيراد مكتبات خارجية
+const Card = ({ children, className, ...props }) => (
+  <div className={`bg-white dark:bg-gray-800 rounded-lg shadow-md ${className || ''}`} {...props}>
+    {children}
+  </div>
+);
+
+const CardContent = ({ children, className, ...props }) => (
+  <div className={`p-6 ${className || ''}`} {...props}>
+    {children}
+  </div>
+);
+
+const Button = ({ onClick, children, className, disabled, ...props }) => (
+  <button
+    onClick={onClick}
+    disabled={disabled}
+    className={`px-4 py-2 rounded-md ${className || 'bg-blue-600 hover:bg-blue-700 text-white'} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+    {...props}
+  >
+    {children}
+  </button>
+);
+
 const RadioGroup = ({ value, onValueChange, children, className, ...props }) => (
   <div className={`flex space-x-4 ${className || ''}`} {...props}>
     {children}
@@ -103,6 +128,7 @@ export default function AddVideo() {
     ];
   };
 
+  // باقي الكود يبقى كما هو...
   const handleExtractThumbnails = () => {
     if (!videoUrl.trim()) {
       alert("يرجى إدخال رابط الفيديو أولاً");
