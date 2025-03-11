@@ -29,6 +29,15 @@ const IntroVideo: React.FC<IntroVideoProps> = ({ videoId }) => {
   useEffect(() => {
     setLoading(true);
     setError(false);
+
+    const timeoutId = setTimeout(() => {
+      if (loading) {
+        setError(true);
+        setLoading(false);
+      }
+    }, 10000); // 10 ثواني كحد أقصى للتحميل
+
+    return () => clearTimeout(timeoutId);
   }, [videoId]);
 
   if (!videoId) {
@@ -51,7 +60,10 @@ const IntroVideo: React.FC<IntroVideoProps> = ({ videoId }) => {
         allow="autoplay"
         onLoad={handleIframeLoad}
         className={`w-full h-full ${loading ? 'opacity-0' : 'opacity-100'}`}
-        onError={() => setError(true)}
+        onError={() => {
+          setError(true);
+          setLoading(false);
+        }}
       />
       
       <button
