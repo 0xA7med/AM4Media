@@ -105,7 +105,7 @@ export default function IntroVideo({ videoId }: IntroVideoProps) {
       
       <iframe
         ref={iframeRef}
-        src={`https://drive.google.com/file/d/${videoId}/preview?autoplay=1&mute=${isMuted ? 1 : 0}`}
+        src={`https://drive.google.com/file/d/${videoId}/preview?`}
         className="w-full h-full border-0"
         allow="autoplay; encrypted-media"
         allowFullScreen

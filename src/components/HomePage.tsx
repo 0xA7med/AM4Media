@@ -378,7 +378,7 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                 {formErrors?.message && <p className="text-red-400 text-sm mt-1">{formErrors.message}</p>}
               </div>
     
-              <div>
+              {/* <div>
                 <label className="block text-gray-300 mb-2 font-medium">رفع الملفات</label>
                 <div className="border-2 border-dashed border-gray-600 rounded-lg p-6 text-center hover:border-blue-500 transition-colors cursor-pointer">
                   <input 
@@ -399,7 +399,7 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                     <p className="text-gray-300 text-sm">{selectedFiles.length} ملف تم اختياره</p>
                   </div>
                 )}
-              </div>
+              </div> */}
     
               <button 
                 type="submit" 
