@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, SyntheticEvent } from "react";
 
 interface IntroVideoProps {
   videoId: string;
@@ -11,18 +11,15 @@ export default function IntroVideo({ videoId }: IntroVideoProps) {
   const [isMuted, setIsMuted] = useState(true);
 
   useEffect(() => {
-    // تأكد من وجود معرف الفيديو
     if (!videoId) {
       setError("لم يتم تحديد معرف الفيديو");
       setIsLoading(false);
       return;
     }
 
-    // إعادة ضبط حالة التحميل عند تغيير معرف الفيديو
     setIsLoading(true);
     setError(null);
     
-    // إضافة مهلة زمنية للكشف عن مشاكل التحميل
     const timeoutId = setTimeout(() => {
       if (isLoading) {
         setError("استغرق تحميل الفيديو وقتًا طويلاً، يرجى التحقق من اتصالك بالإنترنت");
@@ -46,7 +43,6 @@ export default function IntroVideo({ videoId }: IntroVideoProps) {
     setIsMuted(!isMuted);
     if (iframeRef.current && iframeRef.current.contentWindow) {
       try {
-        // محاولة إرسال رسالة للإطار للتحكم في الصوت
         const message = isMuted ? 'unmute' : 'mute';
         iframeRef.current.contentWindow.postMessage(message, '*');
       } catch (error) {
@@ -58,8 +54,6 @@ export default function IntroVideo({ videoId }: IntroVideoProps) {
   const retryLoading = () => {
     setIsLoading(true);
     setError(null);
-    
-    // إعادة تحميل الإطار
     if (iframeRef.current) {
       const src = iframeRef.current.src;
       iframeRef.current.src = '';
@@ -69,7 +63,6 @@ export default function IntroVideo({ videoId }: IntroVideoProps) {
     }
   };
 
-  // إذا لم يكن هناك معرف للفيديو
   if (!videoId && !isLoading && !error) {
     return (
       <div className="w-full h-screen flex items-center justify-center bg-gray-900">
@@ -79,7 +72,7 @@ export default function IntroVideo({ videoId }: IntroVideoProps) {
   }
 
   return (
-    <div className="relative w-full h-screen overflow-hidden">
+    <div className="relative w-full aspect-square rounded-xl overflow-hidden">
       {isLoading && (
         <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-70 z-10">
           <div className="flex flex-col items-center">
@@ -113,7 +106,7 @@ export default function IntroVideo({ videoId }: IntroVideoProps) {
         onError={handleIframeError}
       ></iframe>
       
-      <div className="absolute bottom-10 right-10 z-10">
+      <div className="absolute bottom-4 right-4 z-10">
         <button
           onClick={toggleMute}
           className="p-3 bg-black bg-opacity-50 rounded-full hover:bg-opacity-70 transition-all"
