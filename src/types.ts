@@ -6,6 +6,8 @@ export interface Video {
   thumbnail: string;
   aspectRatio: 'portrait' | 'square';
   createdAt: string; // إضافة حقل التاريخ
+  introVideoId?: string; // معرف فيديو المقدمة من جوجل درايف
+
 }
 
 export interface IntroVideo {

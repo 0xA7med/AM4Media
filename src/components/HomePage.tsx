@@ -192,9 +192,9 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                 </a>
               </div>
             </div>
-            {introVideo && (
+            {settings?.introVideoId && (
               <div className="flex-1 max-w-xl">
-                <IntroVideo videoId={introVideo.id} />
+                <IntroVideo videoId={settings?.introVideoId || ""} />
               </div>
             )}
           </div>
