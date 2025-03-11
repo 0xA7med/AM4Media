@@ -43,21 +43,13 @@ const getSavedVideos = (): Video[] => {
   export const addVideo = (video: Video) => {
     videosState = [...videosState, video];
     
-    fetch('http://localhost:3001/api/updateVideos', {
+    fetch('/api/updateVideos', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(videosState)
     })
-    .then(response => response.json())
-    .then(data => {
-      if (data.success) {
-        console.log('تم تحديث ملف videos.js بنجاح');
-      } else {
-        console.error('فشل تحديث ملف videos.js');
-      }
-    })
     .catch(error => {
-      console.error('خطأ في الاتصال بالسيرفر:', error);
+      console.error("Error updating videos:", error);
     });
     
     saveVideosToStorage(videosState);
