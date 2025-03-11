@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { videos as appVideos } from './App';
+import { useVideos, addVideo, updateVideo, deleteVideo, Video } from './videoStore';
 
 // استيراد الأيقونات
 // يمكنك إزالة هذا السطر إذا كانت مكتبة lucide-react غير متوفرة
@@ -112,10 +113,11 @@ export default function AddVideo() {
   const [showVideoList, setShowVideoList] = useState(true);
   const [thumbnailPreview, setThumbnailPreview] = useState("");
   const [videos, setVideos] = useState(appVideos);
+
   const [thumbnailOptions, setThumbnailOptions] = useState([]);
   const [isLoadingThumbnails, setIsLoadingThumbnails] = useState(false);
   const [copiedCode, setCopiedCode] = useState(false);
-  
+
   // مكونات الأيقونات البسيطة
   const IconEdit = () => <span className="text-blue-600">✏️</span>;
   const IconTrash = () => <span className="text-red-600">🗑️</span>;
@@ -190,13 +192,13 @@ export default function AddVideo() {
     setVideoCategories(videoCategories.filter(cat => cat !== category));
   };
 
-  const handleSaveVideo = () => {
+    const handleSaveVideo = () => {
     if (!videoTitle.trim() || !videoUrl.trim() || !videoThumbnail.trim()) {
       alert("يرجى ملء جميع الحقول المطلوبة");
       return;
     }
     
-    const newVideo = {
+    const newVideo: Video = {
       id: editingVideo ? editingVideo.id : Date.now().toString(),
       title: videoTitle,
       description: videoDescription,
@@ -208,13 +210,10 @@ export default function AddVideo() {
     
     if (editingVideo) {
       // تحديث فيديو موجود
-      const updatedVideos = videos.map(video => 
-        video.id === editingVideo.id ? newVideo : video
-      );
-      setVideos(updatedVideos);
+      updateVideo(newVideo);
     } else {
       // إضافة فيديو جديد
-      setVideos([...videos, newVideo]);
+      addVideo(newVideo);
     }
     
     // إعادة تعيين النموذج
@@ -234,9 +233,10 @@ export default function AddVideo() {
     setShowVideoList(false);
   };
 
-  const handleDeleteVideo = (videoId) => {
+  
+  const handleDeleteVideo = (videoId: string) => {
     if (window.confirm("هل أنت متأكد من حذف هذا الفيديو؟")) {
-      setVideos(videos.filter(video => video.id !== videoId));
+      deleteVideo(videoId);
     }
   };
 

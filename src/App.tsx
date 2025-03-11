@@ -5,6 +5,8 @@ import VideoGallery from './components/VideoGallery';
 import VideoSlider from './components/VideoSlider';
 import HeroSection from './components/HeroSection';
 import emailjs from '@emailjs/browser';
+import { useVideos } from './videoStore';
+
 import AddVideo from './AddVideo'; // لا تحتاج إلى تغيير هذا السطر لأن Vite سيتعرف تلقائيًا على الامتداد
 // تهيئة EmailJS
 emailjs.init("HLBCVhf1ZCFwFRH2T"); 
@@ -451,6 +453,7 @@ function HomePage() {
 }
 
 function App() {
+  const videos = useVideos();
   return (
     <Router>
       <Routes>
