@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Camera, Play, Edit, Monitor, Facebook, Instagram, Twitter, Youtube, Clock, Award, DollarSign, Users2, MessageCircle } from 'lucide-react';
-import VideoGallery from './VideoGallery';
+import { Camera, Play, Edit, Monitor, Facebook, Instagram, Twitter, Youtube, Clock, Award, DollarSign, Users2, MessageCircle, Upload, Mail } from 'lucide-react';import VideoGallery from './VideoGallery';
 import VideoSlider from './VideoSlider';
 import IntroVideo from './IntroVideo';
 import { useVideos } from '../videoStore';
 import emailjs from '@emailjs/browser';
-import { MessageCircle, Upload } from 'lucide-react';  // أو من أي مكتبة أخرى تستخدمها للأيقونات
+
 // Initialize EmailJS
 emailjs.init("HLBCVhf1ZCFwFRH2T");
 
