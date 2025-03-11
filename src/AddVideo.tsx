@@ -725,22 +725,19 @@ export default function AddVideo() {
                       )}
                     </div>
                   )}
-
-                  <div className="mt-8 p-4 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
-                    <h3 className="text-lg font-semibold mb-2">تعليمات الاستخدام</h3>
-                    <ol className="list-decimal list-inside space-y-2">
-                      <li>قم بإضافة أو تعديل الفيديو باستخدام النموذج أعلاه.</li>
-                      <li>عند النقر على "إضافة الفيديو" أو "تحديث الفيديو"، سيتم نسخ كود الفيديو إلى الحافظة.</li>
-                      <li>افتح ملف <code>App.tsx</code> والصق الكود ضمن مصفوفة <code>videos</code>.</li>
-                      <li>إذا كنت تقوم بتحديث فيديو موجود، استبدل الكود القديم بالكود الجديد.</li>
-                      <li>احفظ الملف وأعد تشغيل التطبيق لرؤية التغييرات.</li>
-                    </ol>
-                  </div>
-                </>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
+<div className="mt-8 p-4 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
+  <h3 className="text-lg font-semibold mb-2">تعليمات الاستخدام</h3>
+  <ol className="list-decimal list-inside space-y-2">
+    <li>قم بإضافة أو تعديل الفيديو باستخدام النموذج أعلاه.</li>
+    <li>عند النقر على "إضافة الفيديو" أو "تحديث الفيديو"، سيتم نسخ كود الفيديو إلى الحافظة.</li>
+    <li>افتح ملف <code>App.tsx</code> والصق الكود ضمن مصفوفة <code>videos</code>.</li>
+    <li>إذا كنت تقوم بتحديث فيديو موجود، استبدل الكود القديم بالكود الجديد.</li>
+    <li>احفظ الملف وأعد تشغيل التطبيق لرؤية التغييرات.</li>
+  </ol>
+</div>
+</div>
+</div>
+)}
+</CardContent>
+</Card>
+</div>
