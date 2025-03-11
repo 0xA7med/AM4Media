@@ -230,24 +230,10 @@ export default function HomePage() {
             </div>
             <section className="w-full max-w-7xl mx-auto px-4 py-12">
               {introVideo?.url && (
-                <div className="w-full max-w-sm mx-auto">
+                <div className="w-full max-w-5xl mx-auto">
                   <IntroVideo videoUrl={introVideo.url} className="shadow-lg" />
                 </div>
               )}
-              <div className="flex justify-center gap-4 mt-8">
-                <a 
-                  href="https://wa.me/1234567890" 
-                  className="px-6 py-3 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors"
-                >
-                  طلب خدمة عبر الواتساب
-                </a>
-                <a 
-                  href="https://wa.me/1234567890" 
-                  className="px-6 py-3 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
-                >
-                  تواصل معنا عبر الواتساب
-                </a>
-              </div>
             </section>
           </div>
         </div>

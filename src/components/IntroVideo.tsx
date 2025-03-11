@@ -1,62 +1,52 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 
 interface IntroVideoProps {
-  videoUrl: string;
-  className?: string;
+  videoId: string;
 }
 
-export const IntroVideo: React.FC<IntroVideoProps> = ({ videoUrl, className }) => {
-  const iframeRef = useRef<HTMLIFrameElement>(null);
+const IntroVideo: React.FC<IntroVideoProps> = ({ videoId }) => {
   const [loading, setLoading] = useState(true);
-
-  const getEmbedUrl = (url: string) => {
-    if (url.includes('drive.google.com/file/d/')) {
-      const fileId = url.match(/\/d\/(.+?)\//)
-        ? url.match(/\/d\/(.+?)\//)![1]
-        : url.split('/d/')[1]?.split('/')[0];
-      
-      if (fileId) {
-        return `https://drive.google.com/file/d/${fileId}/preview`;
-      }
-    }
-    return url;
-  };
-
-  useEffect(() => {
-    setLoading(true);
-    
-    const timeout = setTimeout(() => {
-      if (loading) {
-        setLoading(false);
-      }
-    }, 10000);
-    
-    return () => clearTimeout(timeout);
-  }, [videoUrl]);
+  const [error, setError] = useState(false);
 
   const handleIframeLoad = () => {
     setLoading(false);
   };
 
+  useEffect(() => {
+    setLoading(true);
+    setError(false);
+  }, [videoId]);
+
+  if (!videoId) {
+    return <div className="intro-video-placeholder">لا يوجد فيديو تعريفي</div>;
+  }
+
   return (
-    <div className={`relative w-full overflow-hidden rounded-lg ${className}`}>
-      <div className="relative aspect-video w-full">
-        {loading && (
-          <div className="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-800">
-            <div className="w-16 h-16 border-t-4 border-blue-500 border-solid rounded-full animate-spin"></div>
-          </div>
-        )}
-        
-        <iframe
-          ref={iframeRef}
-          src={getEmbedUrl(videoUrl)}
-          className="absolute inset-0 w-full h-full"
-          frameBorder="0"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowFullScreen
-          onLoad={handleIframeLoad}
-        ></iframe>
-      </div>
+    <div className="intro-video-container relative w-full aspect-video rounded-xl overflow-hidden shadow-lg">
+      {loading && (
+        <div className="absolute inset-0 flex items-center justify-center bg-gray-800">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        </div>
+      )}
+      
+      <iframe
+        src={`https://drive.google.com/file/d/${videoId}/preview`}
+        width="100%"
+        height="100%"
+        allow="autoplay"
+        onLoad={handleIframeLoad}
+        className={`w-full h-full ${loading ? 'opacity-0' : 'opacity-100'}`}
+        onError={() => setError(true)}
+      />
+      
+      {error && (
+        <div className="absolute inset-0 flex items-center justify-center bg-gray-800 text-white">
+          حدث خطأ أثناء تحميل الفيديو
+        </div>
+      )}
     </div>
   );
 };
+
+
+export default IntroVideo;
