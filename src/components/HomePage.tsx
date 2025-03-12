@@ -26,7 +26,6 @@ export default function HomePage() {
   const [formErrors, setFormErrors] = useState<{[key: string]: string}>({});
 
   const sortedVideos = useMemo(() => {
-    if (!videos || videos.length === 0) return [];
     return [...videos].sort((a, b) => {
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     });
@@ -162,40 +161,41 @@ export default function HomePage() {
       <section id="home" className="min-h-screen flex items-center justify-center relative overflow-hidden pt-20">
         <div className="absolute inset-0 bg-gradient-to-br from-blue-900/20 via-gray-900 to-black"></div>
         <div className="container mx-auto px-4 relative z-10">
-          <div className="flex flex-col md:flex-row items-center gap-8">
-            <div className="flex-1 text-center md:text-right">
-              <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">
+          <div className="flex flex-col md:flex-row gap-8 items-center justify-between min-h-[400px] md:min-h-[500px]">
+            <div className="flex-1 max-w-2xl">
+              <h1 className="text-5xl font-bold leading-tight text-gray-900 dark:text-white mb-6">
                 AM 4 Media
               </h1>
-              <p className="text-xl md:text-2xl text-gray-300 mb-8">
-              نستمع لأفكارك ونفهم أهدافك
-              <br />
-              ثم نحولها إلى إبداع مرئي متقن يلهم المشاهدين ويجذبهم.
-              <br />
-              فريقنا المحترف يمزج بين الإبداع والخبرة لتقديم محتوى يتجاوز توقعاتك
-              {/* نمنح أفكارك حياة على الشاشة بإبداع يتخطى الحدود. نجمع بين الفن والتقنية لنقدم محتوى مرئياً يعبر عن هويتك ويصل إلى قلوب جمهورك */}
+              <p className="text-xl text-gray-600 dark:text-gray-300 mb-8">
+                نستمع لأفكارك ونفهم أهدافك
+                <br />
+                ثم نحولها إلى إبداع مرئي متقن يلهم المشاهدين ويجذبهم.
+                <br />
+                فريقنا المحترف يمزج بين الإبداع والخبرة لتقديم محتوى يتجاوز توقعاتك
               </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
+              <div className="flex flex-wrap gap-4">
                 <a
                   href="#contact"
                   className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-3 rounded-full text-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105"
                 >
-                  <MessageCircle className="w-5 h-5" />
+                  <MessageCircle className="w-4 h-4 md:w-5 md:h-5" />
                   طلب خدمة
                 </a>
                 <a
                   href="https://wa.me/201026043165"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-full text-lg font-semibold transition-all duration-300 transform hover:scale-105"
+                  className="inline-flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white px-6 py-2 md:px-8 md:py-3 rounded-full text-base md:text-lg font-semibold transition-all duration-300 transform hover:scale-105"
                 >
                   تواصل معنا عبر واتساب
                 </a>
               </div>
             </div>
             {introVideo?.id && (
-              <div className="flex-1 max-w-xl">
-                <IntroVideo videoId={introVideo?.id || ""} />
+              <div className="flex-1 w-full max-w-xl h-[500px] md:h-[300px]">
+                <div className="rounded-xl overflow-hidden shadow-lg h-full">
+                  <IntroVideo videoId={introVideo?.id || ""} className="w-full h-full object-cover" />
+                </div>
               </div>
             )}
           </div>

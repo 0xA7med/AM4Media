@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useVideos } from '../videoStore';
 import { Video, IntroVideo } from '../types';
-import { Download, Trash2, Edit, Plus, Save, Upload, X, GripVertical } from 'lucide-react';
+import { Download, Trash2, Plus, Save, Upload, X, GripVertical } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const ADMIN_PASSWORD = '353567';
@@ -18,15 +18,46 @@ export default function AdminPanel() {
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
   const [draggedVideo, setDraggedVideo] = useState<number | null>(null);
 
-  const [newVideo, setNewVideo] = useState({
+  const [newVideo, setNewVideo] = useState<Video>({
+    id: '',
+    createdAt: new Date().toISOString(),
     title: '',
     description: '',
     driveUrl: '',
     thumbnail: '',
-    categories: '',
-    aspectRatio: 'square' as 'square' | 'portrait',
+    categories: [],
+    aspectRatio: 'square',
     url: ''
   });
+
+// أضف هذا المتغير مع متغيرات الحالة الأخرى
+const [loading, setLoading] = useState(false);
+
+// عدل الـ useEffect كالتالي
+useEffect(() => {
+  // إذا لم تكن هناك فيديوهات، فلا داعي للمتابعة
+  if (!videos || videos.length === 0) return;
+  
+  // ترتيب الفيديوهات بناء على تاريخ الإنشاء (الأحدث أولاً)
+  const sortedVideos = [...videos].sort((a, b) => {
+    // فقط إذا كان لديهما تاريخ إنشاء
+    if (!a.createdAt || !b.createdAt) return 0;
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
+  
+  // تحقق مما إذا كان الترتيب مختلفًا حقًا
+  const currentIds = videos.map(v => v.id);
+  const sortedIds = sortedVideos.map(v => v.id);
+  
+  // فقط حفظ الفيديوهات إذا اختلف الترتيب
+  if (JSON.stringify(currentIds) !== JSON.stringify(sortedIds)) {
+    // استخدم reorderVideos بدلاً من saveVideos لتجنب إعادة تحميل كاملة
+    if (typeof reorderVideos === 'function') {
+      reorderVideos(sortedVideos);
+    }
+  }
+}, [videos]);
+
 
   const [introVideoUrl, setIntroVideoUrl] = useState('');
 
@@ -73,40 +104,42 @@ export default function AdminPanel() {
   };
 
   const handleAddVideo = async (e: React.FormEvent) => {
+    // منع السلوك الافتراضي للنموذج
     e.preventDefault();
-    const driveId = extractDriveId(newVideo.driveUrl);
-    if (!driveId) {
-      toast.error('رابط Drive غير صالح');
-      return;
+        try {
+          const driveId = extractDriveId(newVideo.driveUrl);
+      
+      const thumbnailUrl = getThumbnailUrl(driveId, thumbnailType, customThumbnailUrl);
+      
+      const newVideoData = {
+        ...newVideo,
+        id: driveId,
+        thumbnail: thumbnailUrl,
+        createdAt: new Date().toISOString()
+      };
+      
+      // فقط أضف الفيديو في المخزن - وهو سيقوم بتحديث المصفوفة
+      await addVideo(newVideoData);
+      
+      // حذف هذا السطر لأنه يسبب المشكلة
+      // setVideos(prevVideos => [newVideoData, ...prevVideos]);
+      
+      // إعادة تعيين النموذج
+      setNewVideo({
+        title: '',
+        description: '',
+        url: '',
+        driveUrl: '',
+        thumbnail: '',
+        categories: [],
+        aspectRatio: 'square'
+      });
+      
+      toast.success('تم إضافة الفيديو بنجاح');
+    } catch (error) {
+      console.error('Error adding video:', error);
+      toast.error('فشل في إضافة الفيديو');
     }
-
-    const thumbnail = getThumbnailUrl(driveId, thumbnailType, customThumbnailUrl);
-
-    const videoData: Video = {
-      id: driveId,
-      title: newVideo.title,
-      description: newVideo.description,
-      thumbnail: thumbnail,
-      categories: newVideo.categories.split(',').map(cat => cat.trim()),
-      aspectRatio: newVideo.aspectRatio,
-      driveUrl: newVideo.driveUrl, // التأكد من وجود driveUrl
-      url: newVideo.url, // إضافة هذا الحقل
-      createdAt: new Date().toISOString()
-    };
-
-    addVideo(videoData);
-    setNewVideo({
-      title: '',
-      description: '',
-      driveUrl: '',
-      thumbnail: '',
-      categories: '',
-      aspectRatio: 'square',
-      url: ''
-    });
-    setCustomThumbnailUrl('');
-    setThumbnailFile(null);
-    toast.success('تم إضافة الفيديو بنجاح');
   };
 
   const handleDragStart = (index: number) => {
@@ -140,18 +173,95 @@ export default function AdminPanel() {
     }
   };
 
-  const handleEdit = (video: Video) => {
-    setEditingVideo(video);
+const handleEditVideo = (video: Video) => {
+  console.log("الفيديو الأصلي للتعديل:", video); // للتشخيص
+  
+  // نحفظ نسخة من الفيديو الأصلي
+  setEditingVideo(video);
+  
+  // نتأكد من نسخ جميع الحقول بشكل صحيح مع معالجة القيم الفارغة
+  const videoToEdit = {
+    ...video,
+    id: video.id || '',
+    title: video.title || '',
+    description: video.description || '',
+    url: video.url || '',
+    driveUrl: video.driveUrl || '',
+    thumbnail: video.thumbnail || '',
+    categories: Array.isArray(video.categories) ? video.categories : [video.categories].filter(Boolean),
+    aspectRatio: video.aspectRatio || 'square',
+    createdAt: video.createdAt || new Date().toISOString()
   };
-
-  const handleUpdate = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (editingVideo) {
-      updateVideo(editingVideo.id, editingVideo);
-      setEditingVideo(null);
-      toast.success('تم تحديث الفيديو بنجاح');
+  
+  console.log("الفيديو بعد الإعداد للتعديل:", videoToEdit); // للتشخيص
+  
+  // تعيين البيانات للنموذج
+  setNewVideo(videoToEdit);
+  
+  // تعيين نوع الصورة المصغرة
+  if (video.thumbnail?.includes('drive.google.com')) {
+    setThumbnailType('drive');
+  } else if (video.thumbnail) {
+    setThumbnailType('url');
+    setCustomThumbnailUrl(video.thumbnail);
+  } else {
+    setThumbnailType('drive');
+    setCustomThumbnailUrl('');
+  }
+};
+const handleUpdateVideo = async (videoId: string) => {
+  try {
+    // إعداد البيانات المحدثة
+    const updatedFields: Partial<Video> = {};
+    
+    // تحديث العنوان والوصف والتصنيفات ونسبة العرض
+    updatedFields.title = newVideo.title;
+    updatedFields.description = newVideo.description;
+    updatedFields.categories = newVideo.categories;
+    updatedFields.aspectRatio = newVideo.aspectRatio;
+    
+    // تحديث الروابط فقط إذا تم إدخال قيم جديدة
+    if (newVideo.url && newVideo.url.trim() !== '') {
+      updatedFields.url = newVideo.url;
     }
-  };
+    
+    if (newVideo.driveUrl && newVideo.driveUrl.trim() !== '') {
+      updatedFields.driveUrl = newVideo.driveUrl;
+    }
+    
+    // تحديث الصورة المصغرة
+    const driveId = extractDriveId(newVideo.driveUrl || editingVideo?.driveUrl || '');
+    
+    if (thumbnailType !== 'drive' || driveId !== editingVideo?.id) {
+      updatedFields.thumbnail = getThumbnailUrl(driveId, thumbnailType, customThumbnailUrl);
+    }
+    
+    // حفظ التحديثات
+    await updateVideo(videoId, updatedFields);
+    setEditingVideo(null);
+    
+    toast.success('تم تحديث الفيديو بنجاح', {
+      icon: '✅',
+      style: {
+        borderRadius: '10px',
+        background: '#333',
+        color: '#fff',
+      },
+      duration: 3000
+    });
+  } catch (error) {
+    console.error('Error updating video:', error);
+    toast.error('فشل في تحديث الفيديو', {
+      icon: '❌',
+      style: {
+        borderRadius: '10px',
+        background: '#333',
+        color: '#fff',
+      },
+      duration: 4000
+    });
+  }
+};
 
   const handleDownloadBackup = () => {
     const dataStr = JSON.stringify(videos, null, 2);
@@ -198,7 +308,7 @@ export default function AdminPanel() {
     if (selectedVideo) {
       const introVideo: IntroVideo = {
         id: selectedVideo.id,
-        url: selectedVideo.url || selectedVideo.driveUrl,
+        url: selectedVideo.url,
         thumbnail: `https://drive.google.com/thumbnail?id=${selectedVideo.id}&sz=w1000`
       };
       setIntroVideo(introVideo);
@@ -231,11 +341,9 @@ export default function AdminPanel() {
     );
   }
 
-  const sortedVideos = useMemo(() => {
-    return [...videos].sort((a, b) => {
-      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-    });
-  }, [videos]);
+  const sortedVideos = [...videos].sort((a, b) => {
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
 
   return (
     <div className="min-h-screen bg-gray-900 p-6" dir="rtl">
@@ -301,31 +409,34 @@ export default function AdminPanel() {
                 onChange={(e) => setNewVideo({ ...newVideo, title: e.target.value })}
                 placeholder="عنوان الفيديو"
                 className="px-4 py-2 rounded bg-gray-700 text-white"
-                required
               />
-              <input
-                type="text"
-                value={newVideo.driveUrl}
-                onChange={(e) => setNewVideo({ ...newVideo, driveUrl: e.target.value })}
-                placeholder="رابط Google Drive"
-                className="px-4 py-2 rounded bg-gray-700 text-white"
-                required
-              />
-              <input
-                type="text"
-                value={newVideo.url}
-                onChange={(e) => setNewVideo({ ...newVideo, url: e.target.value })}
-                placeholder="رابط الفيديو"
-                className="px-4 py-2 rounded bg-gray-700 text-white"
-                required
-              />
+              <div className="flex gap-2">
+    <input
+      type="text"
+      value={newVideo.driveUrl}
+      onChange={(e) => setNewVideo({ ...newVideo, driveUrl: e.target.value })}
+      placeholder="رابط Google Drive"
+      className="w-full px-4 py-2 rounded bg-gray-700 text-white"
+    />
+    <button
+      type="button"
+      onClick={async () => {
+        const text = await navigator.clipboard.readText();
+        setNewVideo({ ...newVideo, driveUrl: text });
+      }}
+      className="px-3 py-2 bg-gray-600 text-white rounded hover:bg-gray-500 transition-colors flex items-center"
+    >
+      لصق
+    </button>
+  </div>
+       
             </div>
             <textarea
               value={newVideo.description}
               onChange={(e) => setNewVideo({ ...newVideo, description: e.target.value })}
               placeholder="وصف الفيديو"
               className="w-full px-4 py-2 rounded bg-gray-700 text-white h-32"
-              required
+     
             />
             <div>
               <label className="block text-white mb-2">التصنيفات المتاحة:</label>
@@ -335,11 +446,11 @@ export default function AdminPanel() {
                     key={category}
                     type="button"
                     onClick={() => {
-                      const currentCategories = newVideo.categories.split(',').map(c => c.trim()).filter(c => c);
+                      const currentCategories = newVideo.categories;
                       const newCategories = currentCategories.includes(category)
                         ? currentCategories.filter(c => c !== category)
                         : [...currentCategories, category];
-                      setNewVideo({ ...newVideo, categories: newCategories.join(', ') });
+                      setNewVideo({ ...newVideo, categories: newCategories });
                     }}
                     className={`px-3 py-1 rounded-full text-sm ${
                       newVideo.categories.includes(category)
@@ -353,11 +464,10 @@ export default function AdminPanel() {
               </div>
               <input
                 type="text"
-                value={newVideo.categories}
-                onChange={(e) => setNewVideo({ ...newVideo, categories: e.target.value })}
+                value={newVideo.categories.join(', ')}
+                onChange={(e) => setNewVideo({ ...newVideo, categories: e.target.value.split(',').map(c => c.trim()) })}
                 placeholder="التصنيفات (مفصولة بفواصل)"
                 className="w-full px-4 py-2 rounded bg-gray-700 text-white"
-                required
               />
             </div>
             <div>
@@ -452,16 +562,19 @@ export default function AdminPanel() {
                   className="w-full aspect-video object-cover"
                 />
                 {editingVideo?.id === video.id ? (
-                  <form onSubmit={handleUpdate} className="p-4 space-y-4">
+                  <form onSubmit={(e) => {
+                    e.preventDefault();
+                    handleUpdateVideo(editingVideo.id);
+                  }} className="p-4 space-y-4">
                     <input
                       type="text"
-                      value={editingVideo.title}
-                      onChange={(e) => setEditingVideo({ ...editingVideo, title: e.target.value })}
+                      value={newVideo.title}
+                      onChange={(e) => setNewVideo({ ...newVideo, title: e.target.value })}
                       className="w-full px-4 py-2 rounded bg-gray-600 text-white"
                     />
                     <textarea
-                      value={editingVideo.description}
-                      onChange={(e) => setEditingVideo({ ...editingVideo, description: e.target.value })}
+                      value={newVideo.description}
+                      onChange={(e) => setNewVideo({ ...newVideo, description: e.target.value })}
                       className="w-full px-4 py-2 rounded bg-gray-600 text-white h-24"
                     />
                     <div>
@@ -472,13 +585,13 @@ export default function AdminPanel() {
                             key={category}
                             type="button"
                             onClick={() => {
-                              const newCategories = editingVideo.categories.includes(category)
-                                ? editingVideo.categories.filter(c => c !== category)
-                                : [...editingVideo.categories, category];
-                              setEditingVideo({ ...editingVideo, categories: newCategories });
+                              const newCategories = newVideo.categories.includes(category)
+                                ? newVideo.categories.filter(c => c !== category)
+                                : [...newVideo.categories, category];
+                              setNewVideo({ ...newVideo, categories: newCategories });
                             }}
                             className={`px-3 py-1 rounded-full text-sm ${
-                              editingVideo.categories.includes(category)
+                              newVideo.categories.includes(category)
                                 ? 'bg-blue-500 text-white'
                                 : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
                             }`}
@@ -493,19 +606,13 @@ export default function AdminPanel() {
                       <div className="flex gap-2">
                         <input
                           type="text"
-                          value={editingVideo?.driveUrl || ''}
-                          onChange={(e) => {
-                            if (editingVideo) {
-                              setEditingVideo({...editingVideo, driveUrl: e.target.value});
-                            }
-                          }}
+                          value={newVideo.driveUrl}
+                          onChange={(e) => setNewVideo({ ...newVideo, driveUrl: e.target.value })}
                         />
                         <button
                           onClick={async () => {
                             const text = await navigator.clipboard.readText();
-                            if (editingVideo) {
-                              setEditingVideo({...editingVideo, driveUrl: text});
-                            }
+                            setNewVideo({ ...newVideo, driveUrl: text });
                           }}
                         >
                           لصق
@@ -513,8 +620,8 @@ export default function AdminPanel() {
                       </div>
                     </div>
                     <select
-                      value={editingVideo.aspectRatio}
-                      onChange={(e) => setEditingVideo({ ...editingVideo, aspectRatio: e.target.value as 'square' | 'portrait' })}
+                      value={newVideo.aspectRatio}
+                      onChange={(e) => setNewVideo({ ...newVideo, aspectRatio: e.target.value as 'square' | 'portrait' })}
                       className="w-full px-4 py-2 rounded bg-gray-600 text-white"
                     >
                       <option value="square">مربع</option>
@@ -553,10 +660,10 @@ export default function AdminPanel() {
                     </div>
                     <div className="flex justify-end gap-2">
                       <button
-                        onClick={() => handleEdit(video)}
-                        className="p-2 text-blue-400 hover:text-blue-300 transition-colors"
+                        onClick={() => handleEditVideo(video)}
+                        className="px-3 py-1 bg-yellow-600 text-white rounded hover:bg-yellow-700 transition-colors"
                       >
-                        <Edit size={20} />
+                        تعديل
                       </button>
                       <button
                         onClick={() => handleDelete(video.id)}
@@ -580,32 +687,187 @@ export default function AdminPanel() {
             ))}
           </div>
         </div>
-
-        <div className="mb-6 p-4 border rounded bg-white">
-          <h3>الفيديو التعريفي</h3>
-          <div className="flex gap-2 items-end">
-            <input
-              type="text"
-              value={introVideoUrl}
-              onChange={(e) => setIntroVideoUrl(e.target.value)}
-              placeholder="معرف الفيديو"
-            />
-            <button
-              onClick={async () => {
-                const text = await navigator.clipboard.readText();
-                setIntroVideoUrl(text);
-              }}
-            >
-              لصق
-            </button>
-            <button
-              onClick={handleSetIntroVideo}
-            >
-              تعيين
-            </button>
-          </div>
-        </div>
       </div>
+     // تحديث نموذج تعديل الفيديو
+     {editingVideo && (
+       <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50 overflow-y-auto">
+         <div className="bg-gray-800 rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
+           <div className="sticky top-0 bg-gray-800 p-4 border-b border-gray-700 flex justify-between items-center">
+             <h2 className="text-2xl font-bold text-white">تعديل الفيديو</h2>
+             <button 
+               onClick={() => setEditingVideo(null)} 
+               className="text-gray-400 hover:text-white transition-colors"
+             >
+               <X size={24} />
+             </button>
+           </div>
+           
+           <form onSubmit={(e) => {
+             e.preventDefault();
+             handleUpdateVideo(editingVideo.id);
+           }} className="p-6 space-y-6">
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+               <div className="space-y-4">
+                 <div>
+                   <label className="block text-gray-300 mb-2">عنوان الفيديو</label>
+                   <input
+                     type="text"
+                     value={newVideo.title}
+                     onChange={(e) => setNewVideo({ ...newVideo, title: e.target.value })}
+                     className="w-full px-4 py-2 rounded-lg bg-gray-700 text-white"
+                   />
+                 </div>
+                 
+                 <div>
+                   <label className="block text-gray-300 mb-2">رابط الفيديو</label>
+                   <input
+                     type="text"
+                     value={newVideo.url}
+                     onChange={(e) => setNewVideo({ ...newVideo, url: e.target.value })}
+                     className="w-full px-4 py-2 rounded-lg bg-gray-700 text-white"
+                   />
+                 </div>
+                 
+                 <div>
+                   <label className="block text-gray-300 mb-2">رابط Google Drive</label>
+                   <div className="flex gap-2">
+                     <input
+                       type="text"
+                       value={newVideo.driveUrl}
+                       onChange={(e) => setNewVideo({ ...newVideo, driveUrl: e.target.value })}
+                       className="w-full px-4 py-2 rounded-lg bg-gray-700 text-white"
+                     />
+                     <button
+                       type="button"
+                       onClick={async () => {
+                         const text = await navigator.clipboard.readText();
+                         setNewVideo({ ...newVideo, driveUrl: text });
+                       }}
+                       className="px-3 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-500 transition-colors"
+                     >
+                       لصق
+                     </button>
+                   </div>
+                 </div>
+                 
+                 <div>
+                   <label className="block text-gray-300 mb-2">نسبة العرض</label>
+                   <select
+                     value={newVideo.aspectRatio}
+                     onChange={(e) => setNewVideo({ ...newVideo, aspectRatio: e.target.value as 'square' | 'portrait' })}
+                     className="w-full px-4 py-2 rounded-lg bg-gray-700 text-white"
+                   >
+                     <option value="square">مربع</option>
+                     <option value="portrait">طولي</option>
+                   </select>
+                 </div>
+               </div>
+               
+               <div className="space-y-4">
+                 <div>
+                   <label className="block text-gray-300 mb-2">الصورة المصغرة</label>
+                   <div className="mb-3 relative aspect-video bg-gray-900 rounded-lg overflow-hidden">
+                     <img 
+                       src={newVideo.thumbnail || `https://drive.google.com/thumbnail?id=${extractDriveId(newVideo.driveUrl)}&sz=w1000`}
+                       alt={newVideo.title}
+                       className="w-full h-full object-cover"
+                     />
+                   </div>
+                   <div className="grid grid-cols-2 gap-2">
+                     <div>
+                       <label className="block text-gray-300 mb-2">تحديث الصورة المصغرة</label>
+                       <select
+                         value={thumbnailType}
+                         onChange={(e) => setThumbnailType(e.target.value as 'drive' | 'url' | 'upload')}
+                         className="w-full px-4 py-2 rounded-lg bg-gray-700 text-white"
+                       >
+                         <option value="drive">صورة Google Drive</option>
+                         <option value="url">رابط URL</option>
+                         <option value="upload">رفع صورة</option>
+                       </select>
+                     </div>
+                     
+                     {thumbnailType === 'url' && (
+                       <div>
+                         <label className="block text-gray-300 mb-2">رابط الصورة</label>
+                         <input
+                           type="text"
+                           value={customThumbnailUrl}
+                           onChange={(e) => setCustomThumbnailUrl(e.target.value)}
+                           className="w-full px-4 py-2 rounded-lg bg-gray-700 text-white"
+                         />
+                       </div>
+                     )}
+                     
+                     {thumbnailType === 'upload' && (
+                       <div>
+                         <label className="block text-gray-300 mb-2">رفع صورة</label>
+                         <input
+                           type="file"
+                           accept="image/*"
+                           onChange={handleThumbnailChange}
+                           className="w-full px-4 py-2 rounded-lg bg-gray-700 text-white"
+                         />
+                       </div>
+                     )}
+                   </div>
+                 </div>
+                 
+                 <div>
+                   <label className="block text-gray-300 mb-2">وصف الفيديو</label>
+                   <textarea
+                     value={newVideo.description}
+                     onChange={(e) => setNewVideo({ ...newVideo, description: e.target.value })}
+                     className="w-full px-4 py-2 rounded-lg bg-gray-700 text-white h-32"
+                   />
+                 </div>
+               </div>
+             </div>
+             
+             <div>
+               <label className="block text-gray-300 mb-2">التصنيفات</label>
+               <div className="flex flex-wrap gap-2 mb-3">
+                 {categories.map(category => (
+                   <button
+                     key={category}
+                     type="button"
+                     onClick={() => {
+                       const newCategories = newVideo.categories.includes(category)
+                         ? newVideo.categories.filter(c => c !== category)
+                         : [...newVideo.categories, category];
+                       setNewVideo({ ...newVideo, categories: newCategories });
+                     }}
+                     className={`px-3 py-1 rounded-full text-sm ${
+                       newVideo.categories.includes(category)
+                         ? 'bg-blue-600 text-white'
+                         : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                     }`}
+                   >
+                     {category}
+                   </button>
+                 ))}
+               </div>
+             </div>
+             
+             <div className="flex justify-end gap-4 pt-4 border-t border-gray-700">
+               <button
+                 type="button"
+                 onClick={() => setEditingVideo(null)}
+                 className="px-5 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors"
+               >
+                 إلغاء
+               </button>
+               <button
+                 type="submit"
+                 className="px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+               >
+                 حفظ التعديلات
+               </button>
+             </div>
+           </form>
+         </div>
+       </div>
+     )}
     </div>
   );
 }

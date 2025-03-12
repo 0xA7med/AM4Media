@@ -36,7 +36,6 @@ export default function VideoGallery({ videos }: VideoGalleryProps) {
   
   // ترتيب الفيديوهات بحيث تكون الأحدث في الأعلى
   const sortedVideos = useMemo(() => {
-    if (!videos || videos.length === 0) return [];
     return [...videos].sort((a, b) => {
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     });
@@ -91,7 +90,7 @@ export default function VideoGallery({ videos }: VideoGalleryProps) {
         columnClassName="pl-8" // padding للعمود
       >
         {filteredVideos.map((video) => (
-          <div key={video.id} className="mb-8 relative group">
+          <div key={video.uniqueId} className="mb-8 relative group">
             <button
               onClick={() => setSelectedVideo(video.id)}
               className={`block relative overflow-hidden rounded-xl w-full ${

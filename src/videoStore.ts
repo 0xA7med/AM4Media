@@ -11,8 +11,14 @@ export const useVideos = create<VideoStore>((set, get) => ({
   categories: [],
   
   addVideo: (video) => {
+    const uniqueId = `${video.id}_${Date.now()}`;
+    const videoWithUniqueId = {
+      ...video,
+      uniqueId
+    };
+    
     set((state) => ({
-      videos: [...state.videos, video],
+      videos: [videoWithUniqueId, ...state.videos],
       categories: [...new Set([...state.categories, ...video.categories])]
     }));
     get().saveVideos();
