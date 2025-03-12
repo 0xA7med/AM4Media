@@ -61,7 +61,7 @@ export default function VideoGallery({ videos }: VideoGalleryProps) {
   return (
     <>
       {/* Categories Filter */}
-      <div className="flex flex-wrap justify-center gap-3 mb-8">
+      <div className="flex flex-wrap justify-center gap-3 mb-6">
         <button
           className={`px-4 py-2 rounded-full transition-colors ${
             selectedCategories.includes('all') ? 'bg-blue-600 text-white' : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
@@ -86,11 +86,11 @@ export default function VideoGallery({ videos }: VideoGalleryProps) {
 
       <Masonry
         breakpointCols={breakpointColumnsObj}
-        className="flex w-full -mr-8" // استخدام margin سالب للتعويض عن الفراغ
-        columnClassName="pl-8" // padding للعمود
+        className="flex w-full -mr-" // استخدام margin سالب للتعويض عن الفراغ
+        columnClassName="pl-2" // padding للعمود
       >
         {filteredVideos.map((video) => (
-          <div key={video.uniqueId} className="mb-8 relative group">
+          <div key={video.uniqueId} className="mb-2 relative group">
             <button
               onClick={() => setSelectedVideo(video.id)}
               className={`block relative overflow-hidden rounded-xl w-full ${
