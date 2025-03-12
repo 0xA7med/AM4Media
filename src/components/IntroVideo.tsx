@@ -23,11 +23,12 @@ export default function IntroVideo({ videoId }: IntroVideoProps) {
     setIsLoading(true);
     setError(null);
   }, [videoId]);
-  
+
 
   const handleIframeLoad = () => {
     setIsLoading(false);
   };
+  
 
   const handleIframeError = () => {
     setError("حدث خطأ أثناء تحميل الفيديو");
