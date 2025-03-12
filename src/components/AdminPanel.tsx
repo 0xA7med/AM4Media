@@ -566,7 +566,7 @@ const handleUpdateVideo = async (videoId: string) => {
                     e.preventDefault();
                     handleUpdateVideo(editingVideo.id);
                   }} className="p-4 space-y-4">
-                    <input
+                    {/* <input
                       type="text"
                       value={newVideo.title}
                       onChange={(e) => setNewVideo({ ...newVideo, title: e.target.value })}
@@ -642,7 +642,7 @@ const handleUpdateVideo = async (videoId: string) => {
                       >
                         <X size={20} />
                       </button>
-                    </div>
+                    </div> */}
                   </form>
                 ) : (
                   <div className="p-4">
