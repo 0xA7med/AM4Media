@@ -94,27 +94,29 @@ export default function AdminPanel() {
     }
   };
 
-  const handleAddVideo = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      const driveId = extractDriveId(newVideo.driveUrl);
-      if (!driveId) {
-        toast.error('الرجاء إدخال رابط Google Drive صحيح');
-        setLoading(false);
-        return;
-      }
-      const videoId = Date.now().toString();
-      const thumbnailUrl = getThumbnailUrl(driveId, thumbnailType, customThumbnailUrl);
-      const videoToAdd = {
-        ...newVideo,
-        id: videoId,
-        thumbnail: thumbnailUrl,
-        url: `https://drive.google.com/file/d/${driveId}/preview`,
-      };
-      await addVideo(videoToAdd);
-      setNewVideo({
-        id: '',
+const handleAddVideo = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setLoading(true);
+  try {
+    const driveId = extractDriveId(newVideo.driveUrl);
+    if (!driveId) {
+      toast.error('الرجاء إدخال رابط Google Drive صحيح');
+      setLoading(false);
+      return;
+    }
+    
+    // استخدام معرف Drive مباشرة كـ ID للفيديو
+    const videoToAdd = {
+      ...newVideo,
+      id: driveId, // تعديل هنا - استخدام driveId بدلاً من Date.now()
+      thumbnail: getThumbnailUrl(driveId, thumbnailType, customThumbnailUrl),
+      url: `https://drive.google.com/file/d/${driveId}/preview`,
+    };
+    
+    await addVideo(videoToAdd);
+    
+    setNewVideo({
+      id: '',
         createdAt: new Date().toISOString(),
         title: '',
         description: '',
