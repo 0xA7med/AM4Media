@@ -1,43 +1,55 @@
-import React, { useState, useRef } from 'react';
-import { Volume2, VolumeX } from 'lucide-react';
+import { useEffect, useRef, useState } from "react";
 
 interface IntroVideoProps {
   videoId: string;
 }
 
 export default function IntroVideo({ videoId }: IntroVideoProps) {
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [isMuted, setIsMuted] = useState(true);
-  const videoRef = useRef<HTMLIFrameElement>(null);
+
+  useEffect(() => {
+    // تأكد من وجود معرف الفيديو
+    if (!videoId) {
+      setError("لم يتم تحديد معرف الفيديو");
+      setIsLoading(false);
+      return;
+    }
+
+    // إعادة ضبط حالة التحميل عند تغيير معرف الفيديو
+    setIsLoading(true);
+    setError(null);
+  }, [videoId]);
+
+  const handleIframeLoad = () => {
+    setIsLoading(false);
+  };
+
+  const handleIframeError = () => {
+    setError("حدث خطأ أثناء تحميل الفيديو");
+    setIsLoading(false);
+  };
 
   const toggleMute = () => {
     setIsMuted(!isMuted);
-    if (videoRef.current) {
-      const message = isMuted ? 'unmute' : 'mute';
-      videoRef.current.contentWindow?.postMessage(message, '*');
-    }
   };
 
   return (
-    <div className="relative w-full aspect-video rounded-xl overflow-hidden">
+    <div className="relative w-full h-full">
       <iframe
-        ref={videoRef}
-        src={`https://drive.google.com/file/d/${videoId}/preview?autoplay=1&mute=1`}
-        width="100%"
-        height="100%"
+        ref={iframeRef}
+        src={`https://drive.google.com/file/d/${videoId}/preview?`}
+        className="w-full h-full border-0"
         allow="autoplay; encrypted-media"
         allowFullScreen
-        className="w-full h-full"
+        onLoad={handleIframeLoad}
+        onError={handleIframeError}
       ></iframe>
-      <button
-        onClick={toggleMute}
-        className="absolute bottom-4 right-4 bg-black/50 p-2 rounded-full hover:bg-black/70 transition-colors"
-      >
-        {isMuted ? (
-          <VolumeX className="w-6 h-6 text-white" />
-        ) : (
-          <Volume2 className="w-6 h-6 text-white" />
-        )}
-      </button>
+      <div className="absolute bottom-10 right-10 z-10">
+        
+      </div>
     </div>
   );
 }
