@@ -89,7 +89,7 @@ async function saveToGist(data) {
       body: JSON.stringify({
         files: {
           'videos.json': {
-            content: JSON.stringify(data.videos, null, 2)
+            content: JSON.stringify(data, null, 2)
           }
         }
       })
@@ -158,16 +158,41 @@ export const useVideos = create<VideoStore>((set, get) => ({
   
 
   saveVideos: async () => {
-    const { videos, introVideo, categories } = get();
-    const data = { videos, introVideo, categories };
-    
-    // محاولة الحفظ في Gist
-    const success = await saveToGist(data);
-    
-    if (!success) {
-      console.log('فشل الحفظ في Gist، تم استخدام التخزين المحلي كنسخة احتياطية');
-    } else {
-      console.log('تم حفظ البيانات في Gist بنجاح');
+    try {
+      console.log("جاري حفظ البيانات...");
+      const { videos, introVideo, categories } = get();
+      
+      // تخزين البيانات محلياً
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(videos));
+      localStorage.setItem(INTRO_VIDEO_KEY, JSON.stringify(introVideo));
+      localStorage.setItem(CATEGORIES_KEY, JSON.stringify(categories));
+      
+      // حفظ البيانات في Gist
+      const gistId = import.meta.env.VITE_GIST_ID;
+      const token = import.meta.env.VITE_GITHUB_TOKEN;
+      
+      if (gistId && token) {
+        try {
+          const data = {
+            videos,
+            introVideo,  
+            categories,
+            lastUpdated: new Date().toISOString()
+          };
+          
+          const success = await saveToGist(data);
+          
+          if (!success) {
+            console.log('فشل الحفظ في Gist، تم استخدام التخزين المحلي كنسخة احتياطية');
+          } else {
+            console.log('تم حفظ البيانات في Gist بنجاح');
+          }
+        } catch (error) {
+          console.error('خطأ في حفظ البيانات:', error);
+        }
+      }
+    } catch (error) {
+      console.error("فشل في حفظ البيانات:", error);
     }
   },
 
