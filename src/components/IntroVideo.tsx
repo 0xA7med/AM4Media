@@ -4,6 +4,7 @@ interface IntroVideoProps {
   videoId: string;
 }
 
+
 export default function IntroVideo({ videoId }: IntroVideoProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -22,6 +23,7 @@ export default function IntroVideo({ videoId }: IntroVideoProps) {
     setIsLoading(true);
     setError(null);
   }, [videoId]);
+  
 
   const handleIframeLoad = () => {
     setIsLoading(false);
