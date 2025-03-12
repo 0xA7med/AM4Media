@@ -23,6 +23,7 @@ export default function IntroVideo({ videoId }: IntroVideoProps) {
     setIsLoading(true);
     setError(null);
   }, [videoId]);
+  
 
   const handleIframeLoad = () => {
     setIsLoading(false);
