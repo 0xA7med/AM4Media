@@ -192,12 +192,13 @@ export default function HomePage() {
               </div>
             </div>
             {introVideo?.id && (
-              <div className="flex-1 w-full max-w-xl h-[500px] md:h-[300px]">
-                <div className="rounded-xl overflow-hidden shadow-lg h-full">
-                  <IntroVideo videoId={introVideo?.id || ""} className="w-full h-full object-cover" />
-                </div>
-              </div>
-            )}
+  <div className="flex-1 w-full max-w-xl aspect-video">
+    <div className="rounded-xl overflow-hidden shadow-lg w-full h-full">
+      <IntroVideo videoId={introVideo?.id || ""} className="w-full h-full object-cover" />
+    </div>
+  </div>
+)}
+
           </div>
         </div>
       </section>

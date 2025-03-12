@@ -365,24 +365,44 @@ export default function AdminPanel() {
         </div>
 
         <div className="bg-gray-800 rounded-lg p-6 mb-8">
-          <h2 className="text-xl font-bold text-white mb-4">تعيين الفيديو التعريفي</h2>
-          <div className="flex gap-4">
-            <input
-              type="text"
-              value={introVideoUrl}
-              onChange={(e) => setIntroVideoUrl(e.target.value)}
-              placeholder="رابط فيديو Google Drive"
-              className="flex-1 px-4 py-2 rounded bg-gray-700 text-white"
-            />
+          <h2 className="text-xl font-bold text-white mb-4">إعدادات الفيديو التعريفي</h2>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-gray-300 mb-2">رابط الفيديو التعريفي</label>
+              <input
+                type="text"
+                value={introVideoUrl}
+                onChange={(e) => setIntroVideoUrl(e.target.value)}
+                placeholder="أدخل رابط فيديو تعريفي مباشر"
+                className="w-full px-4 py-2 rounded-lg bg-gray-700 text-white"
+              />
+            </div>
             <button
-              onClick={handleSetIntroVideo}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+              onClick={() => {
+                if (introVideoUrl) {
+                  setIntroVideo({
+                    id: `intro-${Date.now()}`,
+                    title: 'فيديو تعريفي',
+                    description: '',
+                    url: introVideoUrl,
+                    driveUrl: '',
+                    thumbnail: '',
+                    categories: [],
+                    aspectRatio: 'square',
+                    createdAt: new Date().toISOString()
+                  });
+                  toast.success('تم تعيين الفيديو التعريفي بنجاح');
+                } else {
+                  toast.error('الرجاء إدخال رابط فيديو تعريفي');
+                }
+              }}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             >
-              <Save size={20} />
-              حفظ
+              تعيين الفيديو التعريفي
             </button>
           </div>
         </div>
+
 
         <div className="bg-gray-800 rounded-lg p-6 mb-8">
           <h2 className="text-xl font-bold text-white mb-4">إضافة فيديو جديد</h2>
@@ -524,66 +544,76 @@ export default function AdminPanel() {
         </div>
 
         <div className="bg-gray-800 rounded-lg p-6">
-  <h2 className="text-xl font-bold text-white mb-4">الفيديوهات الحالية</h2>
-  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-    {sortedVideos.map((video, index) => (
-      <div
-        key={`${video.id}-${index}`}
-        draggable
-        onDragStart={() => handleDragStart(index)}
-        onDragOver={handleDragOver}
-        onDrop={(e) => handleDrop(e, index)}
-        onDragEnd={handleDragEnd}
-        className="bg-gray-700 rounded-lg overflow-hidden cursor-move flex flex-col min-h-[400px]"
-      >
-        <div className="flex items-center justify-end p-2 bg-gray-800">
-          <GripVertical className="text-gray-400" />
-        </div>
-        <img
-          src={video.thumbnail}
-          alt={video.title}
-          className="w-full aspect-video object-cover"
-        />
-        <div className="p-4 flex flex-col flex-grow">
-          <h3 className="text-lg font-semibold text-white mb-2">{video.title}</h3>
-          <p className="text-gray-300 text-sm mb-4 flex-grow">{video.description}</p>
-          <div className="flex flex-wrap gap-2 mb-4">
-            {video.categories.map((category, index) => (
-              <span
-                key={index}
-                className="px-3 py-1 bg-blue-500/30 text-blue-200 rounded-full text-sm"
+          <h2 className="text-xl font-bold text-white mb-4">الفيديوهات الحالية</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {sortedVideos.map((video, index) => (
+              <div
+                key={`${video.id}-${index}`}
+                draggable
+                onDragStart={() => handleDragStart(index)}
+                onDragOver={handleDragOver}
+                onDrop={(e) => handleDrop(e, index)}
+                onDragEnd={handleDragEnd}
+                className="bg-gray-700 rounded-lg overflow-hidden cursor-move flex flex-col min-h-[400px]"
               >
-                {category}
-              </span>
+                <div className="flex items-center justify-end p-2 bg-gray-800">
+                  <GripVertical className="text-gray-400" />
+                </div>
+                <img
+                  src={video.thumbnail}
+                  alt={video.title}
+                  className="w-full aspect-video object-cover"
+                />
+                <div className="p-4 flex flex-col flex-grow">
+                  <h3 className="text-lg font-semibold text-white mb-2">{video.title}</h3>
+                  <p className="text-gray-300 text-sm mb-4 flex-grow">{video.description}</p>
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {video.categories.map((category, index) => (
+                      <span
+                        key={index}
+                        className="px-3 py-1 bg-blue-500/30 text-blue-200 rounded-full text-sm"
+                      >
+                        {category}
+                      </span>
+                    ))}
+                  </div>
+                  <div className="flex justify-end gap-2 mt-auto">
+                    <button
+                      onClick={() => handleEditVideo(video)}
+                      className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"            >
+                      تعديل
+                    </button>
+                    <button
+                      onClick={() => handleDelete(video.id)}
+                      className="p-2 text-red-400 hover:text-red-300 transition-colors"
+                    >
+                      <Trash2 size={20} />
+                    </button>
+                    <button 
+                      onClick={() => {
+                        try {
+                          const selectedVideo = videos.find(v => v.id === video.id);
+                          if (selectedVideo) {
+                            setIntroVideo(selectedVideo);
+                            toast.success('تم تعيين الفيديو التعريفي بنجاح');
+                          } else {
+                            toast.error('لم يتم العثور على الفيديو');
+                          }
+                        } catch (error) {
+                          console.error('Error setting intro video:', error);
+                          toast.error('حدث خطأ أثناء تعيين الفيديو التعريفي');
+                        }
+                      }}
+                      className="p-2 text-blue-500 hover:text-blue-700"
+                    >
+                      تعيين كفيديو تعريفي
+                    </button>
+                  </div>
+                </div>
+              </div>
             ))}
           </div>
-          <div className="flex justify-end gap-2 mt-auto">
-            <button
-              onClick={() => handleEditVideo(video)}
-              className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"            >
-              تعديل
-            </button>
-            <button
-              onClick={() => handleDelete(video.id)}
-              className="p-2 text-red-400 hover:text-red-300 transition-colors"
-            >
-              <Trash2 size={20} />
-            </button>
-            <button 
-              onClick={() => {
-                const selectedVideo = videos.find(v => v.id === video.id);
-                if (selectedVideo) setIntroVideo(selectedVideo);
-              }}
-              className="p-2 text-blue-500 hover:text-blue-700"
-            >
-              تعيين كفيديو تعريفي
-            </button>
-          </div>
         </div>
-      </div>
-    ))}
-  </div>
-</div>
 
       </div>
       
