@@ -14,9 +14,14 @@ export default function VideoSlider({ videos }: VideoSliderProps) {
   const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
   const recentVideos = videos.slice(0, 5);
 
+  // إيقاف التشغيل التلقائي عند فتح الفيديو
+  const handleVideoSelect = (videoId: string) => {
+    setSelectedVideo(videoId);
+  };
+
   return (
     <>
-      <div className="relative z-10">
+      <div className="relative" style={{ zIndex: 1 }}>
         <Swiper
           modules={[Autoplay, Navigation]}
           spaceBetween={30}
@@ -25,6 +30,7 @@ export default function VideoSlider({ videos }: VideoSliderProps) {
           autoplay={{
             delay: 5000,
             disableOnInteraction: false,
+            pauseOnMouseEnter: true,
           }}
           breakpoints={{
             640: {
@@ -39,7 +45,7 @@ export default function VideoSlider({ videos }: VideoSliderProps) {
           {recentVideos.map((video) => (
             <SwiperSlide key={video.id}>
               <button
-                onClick={() => setSelectedVideo(video.id)}
+                onClick={() => handleVideoSelect(video.id)}
                 className="relative aspect-video w-full rounded-xl overflow-hidden group"
               >
                 <img
@@ -56,16 +62,12 @@ export default function VideoSlider({ videos }: VideoSliderProps) {
         </Swiper>
       </div>
 
-      {/* النافذة العائمة */}
-      {selectedVideo && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-          <VideoModal
-            isOpen={!!selectedVideo}
-            onClose={() => setSelectedVideo(null)}
-            videoId={selectedVideo}
-          />
-        </div>
-      )}
+      {/* تأكد من فصل المكون عن النافذة المنبثقة */}
+      <VideoModal
+        isOpen={!!selectedVideo}
+        onClose={() => setSelectedVideo(null)}
+        videoId={selectedVideo || ''}
+      />
     </>
   );
 }
