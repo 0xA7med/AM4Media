@@ -56,14 +56,16 @@ export default function VideoSlider({ videos }: VideoSliderProps) {
         </Swiper>
       </div>
 
-      {/* النافذة العائمة مع z-index أعلى */}
-      <div className="relative z-50">
-        <VideoModal
-          isOpen={!!selectedVideo}
-          onClose={() => setSelectedVideo(null)}
-          videoId={selectedVideo || ''}
-        />
-      </div>
+      {/* النافذة العائمة */}
+      {selectedVideo && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+          <VideoModal
+            isOpen={!!selectedVideo}
+            onClose={() => setSelectedVideo(null)}
+            videoId={selectedVideo}
+          />
+        </div>
+      )}
     </>
   );
 }
