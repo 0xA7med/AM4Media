@@ -18,6 +18,8 @@ export default function AdminPanel() {
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
   const [draggedVideo, setDraggedVideo] = useState<number | null>(null);
 
+  const [error, setError] = useState<string | null>(null);
+
   const [newVideo, setNewVideo] = useState<Video>({
     id: '',
     createdAt: new Date().toISOString(),
@@ -66,20 +68,61 @@ export default function AdminPanel() {
     const match = url.match(/\/d\/(.*?)(?:\/|$)/);
     return match ? match[1] : '';
   };
+  const [uploading, setUploading] = useState(false);
 
-  const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setThumbnailFile(e.target.files[0]);
-      
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        if (typeof reader.result === 'string') {
-          setCustomThumbnailUrl(reader.result);
-        }
-      };
-      reader.readAsDataURL(e.target.files[0]);
+ // دالة معالجة تغيير الصورة المصغرة بدون استخدام process
+ const handleThumbnailChange = async (event) => {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  // التحقق من نوع الملف
+  if (!file.type.startsWith('image/')) {
+    setError('يرجى تحميل ملف صورة صالح'); // تعيين رسالة الخطأ
+    return;
+  }
+
+  try {
+    setUploading(true);
+    const API_URL = import.meta.env.VITE_API_URL;
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await fetch(`${API_URL}/upload`, {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error(`فشل في رفع الصورة: ${response.status}`);
     }
-  };
+
+    const data = await response.json();
+    setCustomThumbnailUrl(data.url);
+    setThumbnailUrl(data.url);
+
+    setError(null); // إعادة تعيين حالة الخطأ عند النجاح
+  } catch (error) {
+    console.error('خطأ في رفع الصورة:', error);
+    setError(`حدث خطأ أثناء رفع الصورة: ${error.message}`); // تعيين رسالة الخطأ
+  } finally {
+    setUploading(false);
+  }
+};
+  
+  // const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   if (e.target.files && e.target.files[0]) {
+  //     setThumbnailFile(e.target.files[0]);
+      
+  //     const reader = new FileReader();
+  //     reader.onloadend = () => {
+  //       if (typeof reader.result === 'string') {
+  //         setCustomThumbnailUrl(reader.result);
+  //       }
+  //     };
+  //     reader.readAsDataURL(e.target.files[0]);
+  //   }
+  // };
 
   const getThumbnailUrl = (driveId: string, type: string, customUrl: string) => {
     switch (type) {
@@ -367,43 +410,59 @@ const handleAddVideo = async (e: React.FormEvent) => {
         </div>
 
         <div className="bg-gray-800 rounded-lg p-6 mb-8">
-          <h2 className="text-xl font-bold text-white mb-4">إعدادات الفيديو التعريفي</h2>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-gray-300 mb-2">رابط الفيديو التعريفي</label>
-              <input
-                type="text"
-                value={introVideoUrl}
-                onChange={(e) => setIntroVideoUrl(e.target.value)}
-                placeholder="أدخل رابط فيديو تعريفي مباشر"
-                className="w-full px-4 py-2 rounded-lg bg-gray-700 text-white"
-              />
-            </div>
-            <button
-              onClick={() => {
-                if (introVideoUrl) {
-                  setIntroVideo({
-                    id: `intro-${Date.now()}`,
-                    title: 'فيديو تعريفي',
-                    description: '',
-                    url: introVideoUrl,
-                    driveUrl: '',
-                    thumbnail: '',
-                    categories: [],
-                    aspectRatio: 'square',
-                    createdAt: new Date().toISOString()
-                  });
-                  toast.success('تم تعيين الفيديو التعريفي بنجاح');
-                } else {
-                  toast.error('الرجاء إدخال رابط فيديو تعريفي');
-                }
-              }}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              تعيين الفيديو التعريفي
-            </button>
-          </div>
-        </div>
+  <h2 className="text-xl font-bold text-white mb-4">إعدادات الفيديو التعريفي</h2>
+  <div className="space-y-4">
+    <div>
+      <label className="block text-gray-300 mb-2">رابط الفيديو التعريفي</label>
+      <div className="flex space-x-2 rtl:space-x-reverse">
+        <input
+          type="text"
+          value={introVideoUrl}
+          onChange={(e) => setIntroVideoUrl(e.target.value)}
+          placeholder="أدخل رابط فيديو تعريفي مباشر"
+          className="flex-1 px-4 py-2 rounded-lg bg-gray-700 text-white"
+        />
+        <button
+          type="button"
+          onClick={async () => {
+            try {
+              const text = await navigator.clipboard.readText();
+              setIntroVideoUrl(text);
+            } catch (error) {
+              toast.error('فشل في الوصول إلى الحافظة');
+            }
+          }}
+          className="px-3 py-2 bg-gray-600 text-white rounded hover:bg-gray-500 transition-colors flex items-center"
+        >
+          لصق
+        </button>
+        <button
+          onClick={() => {
+            if (introVideoUrl) {
+              setIntroVideo({
+                id: `intro-${Date.now()}`,
+                title: 'فيديو تعريفي',
+                description: '',
+                url: introVideoUrl,
+                driveUrl: '',
+                thumbnail: '',
+                categories: [],
+                aspectRatio: 'square',
+                createdAt: new Date().toISOString()
+              });
+              toast.success('تم تعيين الفيديو التعريفي بنجاح');
+            } else {
+              toast.error('الرجاء إدخال رابط فيديو تعريفي');
+            }
+          }}
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+        >
+          تعيين
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
 
 
         <div className="bg-gray-800 rounded-lg p-6 mb-8">
@@ -729,17 +788,36 @@ const handleAddVideo = async (e: React.FormEvent) => {
                         </div>
                       )}
                       
-                      {thumbnailType === 'upload' && (
-                        <div>
-                          <label className="block text-gray-300 mb-2">رفع صورة</label>
-                          <input
-                            type="file"
-                            accept="image/*"
-                            onChange={handleThumbnailChange}
-                            className="w-full px-4 py-2 rounded-lg bg-gray-700 text-white"
-                          />
-                        </div>
-                      )}
+                    {thumbnailType === 'upload' && (
+  <div>
+    <input
+      type="file"
+      onChange={handleThumbnailChange}
+      accept="image/*"
+      className="w-full px-4 py-2 rounded bg-gray-700 text-white mb-4"
+      disabled={uploading}
+    />
+    {uploading && (
+      <div className="text-white mt-2 flex items-center gap-2">
+        <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        <span>جاري رفع الصورة...</span>
+      </div>
+    )}
+    {!uploading && customThumbnailUrl && (
+      <div className="mt-2">
+        <p className="text-white mb-2">معاينة الصورة المصغرة:</p>
+        <img 
+          src={customThumbnailUrl} 
+          alt="معاينة" 
+          className="w-32 h-32 object-cover rounded" 
+        />
+      </div>
+    )}
+  </div>
+)}
                     </div>
                   </div>
                   
